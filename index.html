@@ -558,6 +558,16 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
   background:linear-gradient(145deg,#ffffff,#f5efe6);color:var(--text);box-shadow:var(--clay-soft);
 }
 .book-card .bc-actions button:active{transform:translateY(1px);box-shadow:var(--clay-press);}
+.bc-extra{font-size:11px;color:var(--text-soft);margin-top:6px;text-align:right;font-weight:600;}
+.b-notes{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+.b-note{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--text);}
+.b-note span{flex:1;}
+.b-note .b-note-date{font-size:11px;color:var(--text-soft);flex:none;}
+.b-note .close{font-size:15px;color:var(--text-soft);}
+.b-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.b-img{position:relative;width:64px;height:64px;border-radius:12px;overflow:hidden;box-shadow:var(--clay-soft);background:#eee;}
+.b-img img{width:100%;height:100%;object-fit:cover;}
+.b-img .close{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.45);color:#fff;font-size:13px;width:18px;height:18px;line-height:16px;text-align:center;border-radius:50%;border:none;cursor:pointer;}
 
 /* 弹窗表单 */
 .form-row{display:flex;gap:10px;margin-bottom:10px;}
@@ -617,6 +627,23 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 .m-summary b{color:#5c4a3a;font-size:13px;}
 .m-inc-list{margin-top:10px;border-top:1px dashed rgba(120,100,80,.2);padding-top:8px;}
 .m-inc-list .m-inc-title{font-size:12px;color:var(--text-soft);font-weight:700;margin-bottom:6px;}
+.m-subs{margin-top:-4px;}
+.m-chart{margin:6px 0 12px;display:flex;flex-direction:column;gap:8px;}
+.ch-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);font-weight:600;}
+.ch-row>span{width:32px;flex-shrink:0;}
+.ch-row>b{font-size:12px;color:#5c4a3a;min-width:48px;text-align:right;}
+.ch-bar{flex:1;height:12px;border-radius:8px;background:rgba(140,120,100,.12);overflow:hidden;}
+.ch-bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#9ad0b1,#6bbf8f);transition:width .4s;}
+.ch-bar.exp i{background:linear-gradient(90deg,#f6c96b,#f2a05a);}
+.m-pie-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.m-pie{width:150px;height:150px;border-radius:50%;flex-shrink:0;box-shadow:var(--clay-inset);position:relative;}
+.m-pie::after{content:'';position:absolute;left:50%;top:50%;width:56px;height:56px;transform:translate(-50%,-50%);background:#fff;border-radius:50%;box-shadow:var(--clay-soft);}
+.pie-leg{flex:1;min-width:150px;display:flex;flex-direction:column;gap:6px;}
+.pie-lg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-soft);font-weight:600;}
+.pie-lg .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.pie-lg span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pie-lg b{font-size:12px;color:#5c4a3a;min-width:34px;text-align:right;}
+.pie-lg em{font-style:normal;font-size:11px;color:#c07f6b;min-width:52px;text-align:right;}
 .spend-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(140,120,100,.1);}
 .spend-item:last-child{border-bottom:none;}
 .spend-ico{width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:18px;background:linear-gradient(145deg,#fff,#f5efe6);box-shadow:var(--clay-soft);flex-shrink:0;}
@@ -1586,14 +1613,18 @@ function embedAllcal(){
 
 /* ================= 记账 ================= */
 const MONEY_CATS=[
-  {name:'抖音',emoji:'🎵'},{name:'快手',emoji:'📹'},{name:'拼多多',emoji:'🛒'},{name:'淘宝',emoji:'🛍️'},{name:'外卖',emoji:'🍜'},{name:'线下',emoji:'🏪'},{name:'其他',emoji:'📌'}
+  {name:'居住',emoji:'🏠'},{name:'食品',emoji:'🍚'},{name:'衣物',emoji:'👕'},{name:'学习',emoji:'📚'},
+  {name:'生活用品',emoji:'🧻'},{name:'交通',emoji:'🚌'},{name:'生活缴费',emoji:'💡',sub:['水','电','燃气','宽带网络','手机月租']},{name:'其他',emoji:'📌'}
 ];
-let moneyCat='抖音';
+let moneyCat='食品';
+let moneySub='';
+let moneyStatsYm='';
+function shiftYm(ym, delta){ const p=ym.split('-').map(Number); const d=new Date(p[0], p[1]-1+delta, 1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
 function addMoneyRecord(r){
   DB.money.records.push({id:uid(),ts:Date.now(),date:r.date,time:r.time||new Date().toTimeString().slice(0,5),cat:r.cat,item:r.item,amount:+r.amount||0,note:r.note||'',type:r.type||'expense'});
 }
 function spendItemHTML(r){
-  const icon=(MONEY_CATS.find(c=>c.name===r.cat)||{emoji:'💰'}).emoji;
+  const icon=(MONEY_CATS.find(c=>c.name===r.cat.split('·')[0])||{emoji:'💰'}).emoji;
   const isIncome=r.type==='income';
   return `<div class="spend-item">
     <span class="spend-ico">${icon}</span>
@@ -1610,10 +1641,31 @@ function renderMoney(){
   const today=todayStr();
   const todayRecs=recs.filter(r=>r.date===today);
   const todaySpend=todayRecs.filter(r=>r.type!=='income').reduce((s,r)=>s+(+r.amount||0),0);
+  const todayExpRecs=todayRecs.filter(r=>r.type!=='income');
   const ym=today.slice(0,7);
+  if(!moneyStatsYm) moneyStatsYm=ym;
   const monthIncome=recs.filter(r=>r.type==='income'&&r.date.startsWith(ym)).reduce((s,r)=>s+(+r.amount||0),0);
   const monthSpend=recs.filter(r=>r.type!=='income'&&r.date.startsWith(ym)).reduce((s,r)=>s+(+r.amount||0),0);
   const incomeRecords=recs.filter(r=>r.type==='income'&&r.date.startsWith(ym));
+  // 统计图数据（可切换月份）
+  const statsYm=moneyStatsYm||ym;
+  const sRecs=recs.filter(r=>r.date.startsWith(statsYm));
+  const sIncome=sRecs.filter(r=>r.type==='income').reduce((s,r)=>s+(+r.amount||0),0);
+  const sExpense=sRecs.filter(r=>r.type!=='income').reduce((s,r)=>s+(+r.amount||0),0);
+  const catTotals={};
+  sRecs.filter(r=>r.type!=='income').forEach(r=>{ const k=r.cat.split('·')[0]||'其他'; catTotals[k]=(catTotals[k]||0)+(+r.amount||0); });
+  const entries=Object.entries(catTotals).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const expTotal=entries.reduce((s,[,v])=>s+v,0);
+  const PIE_COLORS=['#f2a3a3','#f6c96b','#9ad0b1','#a8c8e8','#c9a8e8','#e8a8c8','#b1d4e0','#e0d2b1','#cfe8a8'];
+  let acc=0;
+  const segs=entries.map(([k,v],i)=>{ const pct=v/expTotal*100; const from=acc; acc+=pct; const to=acc; return PIE_COLORS[i%PIE_COLORS.length]+' '+from.toFixed(2)+'% '+to.toFixed(2)+'%'; });
+  const pieBg=entries.length?('conic-gradient('+segs.join(',')+')'):'#eee';
+  const pieLeg=entries.map(([k,v],i)=>`<div class="pie-lg"><span class="dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></span><span>${escapeHtml(k)}</span><b>${Math.round(v/expTotal*100)}%</b><em>¥${v}</em></div>`).join('');
+  const maxV=Math.max(sIncome,sExpense,1);
+  const incW=Math.round(sIncome/maxV*100);
+  const expW=Math.round(sExpense/maxV*100);
+  const moneyCatSubs=(MONEY_CATS.find(c=>c.name===moneyCat)||{}).sub||[];
+  if(moneyCatSubs.length && !moneySub) moneySub=moneyCatSubs[0];
   const dateOptions=[];
   for(let i=0;i<30;i++){ const d=new Date(Date.now()-i*86400000); const s=fmtDate(d); dateOptions.push(`<option value="${s}" ${s===today?'selected':''}>${s}</option>`); }
   const timeNow=new Date().toTimeString().slice(0,5);
@@ -1638,15 +1690,27 @@ function renderMoney(){
       <h3>✍️ 记一笔</h3>
       <div class="m-date-row"><select id="mDate">${dateOptions.join('')}</select><select id="mTime">${timeOpts}</select></div>
       <div class="m-cats">${MONEY_CATS.map(c=>`<button class="m-cat ${c.name===moneyCat?'on':''}" data-cat="${c.name}">${c.emoji} ${c.name}</button>`).join('')}</div>
+      ${moneyCatSubs.length?`<div class="m-cats m-subs">${moneyCatSubs.map(s=>`<button class="m-cat ${s===moneySub?'on':''}" data-sub="${s}">${s}</button>`).join('')}</div>`:''}
       <div class="form-row"><input type="number" id="mAmount" placeholder="金额" inputmode="decimal"><input type="text" id="mItem" placeholder="购买物品"></div>
       <textarea id="mNote" placeholder="备注(可选)" style="min-height:52px"></textarea>
       <button class="btn btn-primary btn-block" style="margin-top:12px" id="mSave">记一笔</button>
     </div>
     <div class="card">
+      <div class="money-head" style="margin-bottom:8px"><h3>📊 每月统计</h3><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-ghost btn-sm" id="msPrev">‹</button><span id="msYm" style="font-size:13px;font-weight:700">${statsYm}</span><button class="btn btn-ghost btn-sm" id="msNext">›</button></div></div>
+      <div class="m-chart">
+        <div class="ch-row"><span>收入</span><div class="ch-bar"><i style="width:${incW}%"></i></div><b>¥${sIncome}</b></div>
+        <div class="ch-row"><span>支出</span><div class="ch-bar exp"><i style="width:${expW}%"></i></div><b>¥${sExpense}</b></div>
+      </div>
+      <div class="m-pie-wrap">
+        ${entries.length?`<div class="m-pie" style="background:${pieBg}"></div><div class="pie-leg">${pieLeg}</div>`:`<div style="text-align:center;color:var(--text-soft);padding:14px;flex:1">本月还没有支出记录</div>`}
+      </div>
+    </div>
+    <div class="card">
       <div class="money-head" style="margin-bottom:6px"><h3>今日消费</h3><span class="m-total">¥${todaySpend}</span></div>
-      ${todayRecs.length? todayRecs.map(r=>spendItemHTML(r)).join('') : '<div style="text-align:center;color:var(--text-soft);padding:16px">今天还没有消费记录</div>'}
+      ${todayExpRecs.length? todayExpRecs.map(r=>spendItemHTML(r)).join('') : '<div style="text-align:center;color:var(--text-soft);padding:16px">今天还没有消费记录</div>'}
     </div>`;
-  pagesEl.querySelectorAll('.m-cat').forEach(b=>{ b.onclick=()=>{ moneyCat=b.dataset.cat; renderMoney(); }; });
+  pagesEl.querySelectorAll('[data-cat]').forEach(b=>{ b.onclick=()=>{ moneyCat=b.dataset.cat; moneySub=''; renderMoney(); }; });
+  pagesEl.querySelectorAll('[data-sub]').forEach(b=>{ b.onclick=()=>{ moneySub=b.dataset.sub; renderMoney(); }; });
   document.getElementById('editBudget').onclick=()=>{ const v=prompt('设置本月预算(元)',DB.money.budget||''); if(v!==null){ DB.money.budget=Math.max(0,+v||0); save(); renderMoney(); } };
   document.getElementById('addIncome').onclick=()=>{ const b=document.getElementById('incomeBox'); b.style.display=b.style.display==='none'?'block':'none'; };
   document.getElementById('incSave').onclick=()=>{
@@ -1658,15 +1722,21 @@ function renderMoney(){
   document.getElementById('mSave').onclick=()=>{
     const amt=+document.getElementById('mAmount').value||0;
     if(amt<=0) return toast('请输入有效金额');
-    addMoneyRecord({amount:amt,item:document.getElementById('mItem').value.trim()||MONEY_CATS.find(c=>c.name===moneyCat).name,cat:moneyCat,note:document.getElementById('mNote').value.trim(),type:'expense',date:document.getElementById('mDate').value,time:document.getElementById('mTime').value});
+    const catName = moneyCatSubs.length ? (moneyCat+'·'+(moneySub||moneyCatSubs[0])) : moneyCat;
+    addMoneyRecord({amount:amt,item:document.getElementById('mItem').value.trim()||catName,cat:catName,note:document.getElementById('mNote').value.trim(),type:'expense',date:document.getElementById('mDate').value,time:document.getElementById('mTime').value});
     save(); toast('已记一笔'); renderMoney();
   };
+  document.getElementById('msPrev').onclick=()=>{ moneyStatsYm=shiftYm(moneyStatsYm,-1); renderMoney(); };
+  document.getElementById('msNext').onclick=()=>{ moneyStatsYm=shiftYm(moneyStatsYm,1); renderMoney(); };
   pagesEl.querySelectorAll('[data-mdel]').forEach(b=>{ b.onclick=()=>{ DB.money.records=DB.money.records.filter(r=>r.id!==b.dataset.mdel); save(); renderMoney(); }; });
 }
 
 /* ================= 养生 ================= */
-const YS_DEFAULT=[{name:'喝水',icon:'💧'},{name:'早睡',icon:'🌙'},{name:'八段锦',icon:'🧘'},{name:'泡脚',icon:'🦶'},{name:'冥想',icon:'🪷'}];
+const YS_DEFAULT=[{name:'喝水',icon:'💧'},{name:'早睡',icon:'🌙'},{name:'泡脚',icon:'🦶'},{name:'冥想',icon:'🪷'}];
+let YS_MIGRATED=false;
 function renderYangsheng(){
+  // 一次性迁移：移除默认的「八段锦」习惯
+  if(!YS_MIGRATED){ YS_MIGRATED=true; const arr=DB.yangsheng.habits||[]; if(arr.some(h=>h.name==='八段锦')){ DB.yangsheng.habits=arr.filter(h=>h.name!=='八段锦'); save(); } }
   if(!DB.yangsheng.habits.length){ DB.yangsheng.habits=YS_DEFAULT.map(h=>({id:uid(),...h})); save(); }
   const t=todayStr();
   const log=DB.yangsheng.logs[t]||{};
@@ -1687,6 +1757,7 @@ function renderYangsheng(){
           <span class="mc-ico">${h.icon}</span>
           <div style="flex:1"><div class="mc-name">${escapeHtml(h.name)}</div></div>
           ${done?'<span class="mc-done">✅</span><button class="mc-btn" data-hact="reset" style="font-size:14px">↩️</button>':'<button class="mc-btn" data-hact="yes">✓</button>'}
+          <button class="mc-btn" data-hdel="${h.id}" style="font-size:14px">🗑️</button>
         </div>`;
       }).join('')}
     </div>
@@ -1702,7 +1773,16 @@ function renderYangsheng(){
     </div>`;
   pagesEl.querySelectorAll('[data-hid]').forEach(item=>{
     item.addEventListener('click',e=>{
+      const del=e.target.closest('[data-hdel]');
       const act=e.target.closest('[data-hact]')?.dataset.hact; const id=item.dataset.hid;
+      if(del){
+        const hN=(DB.yangsheng.habits.find(h=>h.id===del.dataset.hdel)||{}).name||'这个习惯';
+        if(confirm('确定删除「'+hN+'」吗？')){
+          DB.yangsheng.habits=DB.yangsheng.habits.filter(h=>h.id!==del.dataset.hdel);
+          save(); renderYangsheng(); toast('已删除');
+        }
+        return;
+      }
       if(!act)return;
       DB.yangsheng.logs[t]=DB.yangsheng.logs[t]||{};
       if(act==='yes') DB.yangsheng.logs[t][id]=true; else DB.yangsheng.logs[t][id]=false;
@@ -1852,6 +1932,59 @@ function showMemoModal(id){
 /* ================= 穿搭 + 妆容 ================= */
 let outfitTab='dress';
 const OUTFIT_CITIES=['湖北省武汉市洪山区','北京市海淀区','河南省周口市','北京市朝阳区','上海市浦东新区','广东省广州市天河区','四川省成都市武侯区','浙江省杭州市西湖区'];
+/* 城市 → 地理查询名（Open-Meteo 地理编码） */
+const CITY_GEO={
+  '湖北省武汉市洪山区':'武汉','北京市海淀区':'北京','河南省周口市':'周口','北京市朝阳区':'北京',
+  '上海市浦东新区':'上海','广东省广州市天河区':'广州','四川省成都市武侯区':'成都','浙江省杭州市西湖区':'杭州'
+};
+/* 实时天气：Open-Meteo 免费接口（无需 key），失败则回退静态展示 */
+async function loadWeather(){
+  try{
+    const city=DB.outfitCity||'北京市海淀区';
+    const geoName=CITY_GEO[city]||city;
+    const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(geoName)+'&count=1&language=zh&format=json').then(r=>r.json());
+    const loc=(g.results&&g.results[0])||null;
+    if(!loc) throw new Error('geocode fail');
+    const f=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+loc.latitude+'&longitude='+loc.longitude+'&current=temperature_2m,weather_code&timezone=auto').then(r=>r.json());
+    const c=f.current||{};
+    const temp=Math.round(c.temperature_2m);
+    const wm=weatherMeta(c.weather_code);
+    const sug=clothingSug(temp, wm.kind);
+    const set=(id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent=txt; };
+    set('wTemp', temp+'°C');
+    set('wCond', wm.text+' · '+wm.emoji);
+    const ic=document.getElementById('wIco'); if(ic) ic.textContent=wm.emoji;
+    set('wSuggest', sug);
+    set('wTime', '更新于 '+new Date().toTimeString().slice(0,5));
+    DB._weather={temp, code:c.weather_code, text:wm.text, kind:wm.kind, time:Date.now()};
+  }catch(e){ console.warn('weather fail', e); }
+}
+/* WMO 天气代码 → 中文 + 图标 */
+function weatherMeta(code){
+  const m={0:['晴','☀️'],1:['大部晴朗','🌤'],2:['多云','⛅'],3:['阴','☁️'],45:['雾','🌫'],48:['雾凇','🌫'],
+    51:['毛毛雨','🌦'],53:['毛毛雨','🌦'],55:['毛毛雨','🌦'],61:['小雨','🌧'],63:['中雨','🌧'],65:['大雨','🌧'],
+    71:['小雪','🌨'],73:['中雪','🌨'],75:['大雪','🌨'],77:['雪粒','🌨'],80:['阵雨','🌦'],81:['阵雨','🌦'],82:['强阵雨','🌧'],
+    95:['雷阵雨','⛈'],96:['雷雨冰雹','⛈'],99:['雷雨冰雹','⛈']};
+  const def=m[code]||['阴晴','🌤'];
+  let kind='cloud';
+  if(code===0||code===1) kind='sunny';
+  else if(code>=71&&code<=77) kind='snow';
+  else if(code>=51&&code<=67||code>=80&&code<=82||code>=95) kind='rain';
+  return {text:def[0],emoji:def[1],kind};
+}
+/* 按温度给出穿搭建议 */
+function clothingSug(temp, kind){
+  let line1='';
+  if(temp>=32) line1='炎热 · 短袖';
+  else if(temp>=28) line1='热 · 短袖/薄衫';
+  else if(temp>=24) line1='舒适 · 薄外套+短袖';
+  else if(temp>=19) line1='微凉 · 针织/薄外套';
+  else if(temp>=13) line1='较冷 · 风衣/夹克';
+  else if(temp>=6) line1='冷 · 毛衣/厚外套';
+  else line1='寒冷 · 羽绒服';
+  let line2 = kind==='rain' ? '☂️ 记得带伞' : kind==='snow' ? '🧣 注意保暖' : '☀️ 可出门活动';
+  return line1+'<br>'+line2;
+}
 function renderOutfit(){
   pagesEl.innerHTML=`
     <h1 class="page-title">${tIcon('outfit')}穿搭</h1>
@@ -1869,12 +2002,13 @@ function renderDressHTML(){
   return `
     <div class="weather-card">
       <div style="display:flex;align-items:flex-start;gap:10px">
-        <span class="w-ico">☀️</span>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text-soft)">天气信息</div>
-          <div class="w-row"><span class="w-temp">24°C</span><span class="w-cond">晴</span></div>
+        <span class="w-ico" id="wIco">🌤</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text-soft)">实时天气信息 <button class="btn btn-ghost btn-sm" id="wRefresh" style="margin-left:6px">↻ 更新</button></div>
+          <div class="w-row"><span class="w-temp" id="wTemp">--°C</span><span class="w-cond" id="wCond">读取中…</span></div>
           <select id="wCity" class="w-city">${OUTFIT_CITIES.map(c=>`<option value="${c}" ${c===DB.outfitCity?'selected':''}>${c}</option>`).join('')}</select>
+          <div id="wTime" style="font-size:11px;color:var(--text-soft);margin-top:4px"></div>
         </div>
-        <div class="w-suggest" style="text-align:right">舒适<br>薄外套+短袖<br>刚刚好</div>
+        <div class="w-suggest" id="wSuggest" style="text-align:right">实时天气<br>智能穿搭建议</div>
       </div>
     </div>
     <div class="card">
@@ -1903,8 +2037,10 @@ function bindDress(){
   document.getElementById('saveOutfit').onclick=()=>{
     DB.wardrobe.today=[{note:document.getElementById('todayOutfit').value,date:todayStr()}]; save(); toast('穿搭已保存');
   };
-  const wc=document.getElementById('wCity'); if(wc){ wc.onchange=()=>{ DB.outfitCity=wc.value; save(); }; }
+  const wc=document.getElementById('wCity'); if(wc){ wc.onchange=()=>{ DB.outfitCity=wc.value; save(); loadWeather(); }; }
   pagesEl.querySelectorAll('[data-cdel]').forEach(b=>{ b.onclick=()=>{ DB.wardrobe.clothes=DB.wardrobe.clothes.filter(c=>c.id!==b.dataset.cdel); save(); renderOutfit(); }; });
+  const wR=document.getElementById('wRefresh'); if(wR) wR.onclick=()=>loadWeather();
+  loadWeather();
 }
 function showClothModal(){
   document.getElementById('modalBody').innerHTML=`
@@ -2178,6 +2314,7 @@ function bookCardHTML(b){
     </div>
     <div class="bc-progress"><div class="bc-progress-bar" style="width:${pct}%"></div></div>
     <div class="bc-pages">${b.currentPage||0} / ${b.totalPages||0} 页 · ${pct}%</div>
+    ${((b.notes&&b.notes.length)||(b.imgs&&b.imgs.length))?`<div class="bc-extra">📝 ${(b.notes||[]).length} 条心得${(b.imgs&&b.imgs.length)?` · 🖼️ ${b.imgs.length} 张图`:''}</div>`:''}
     <div class="bc-actions">
       <button data-edit="${b.id}">编辑</button>
       <button data-del="${b.id}">删除</button>
@@ -2194,6 +2331,8 @@ function showBookModal(bookId){
   const category = book?.category||'文学';
   const status = book?.status||'未读';
   const currentPage = book?.currentPage||'';
+  let notes = (book?.notes||[]).slice();
+  let imgs = (book?.imgs||[]).slice();
 
   document.getElementById('modalBody').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -2228,6 +2367,15 @@ function showBookModal(bookId){
     </div>
     <label class="f-label">当前页数</label>
     <input type="number" id="bCurrent" placeholder="0" value="${currentPage}">
+    <label class="f-label">📚 读书心得（可多条）</label>
+    <div id="bNotesList" class="b-notes"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input type="text" id="bNewNote" placeholder="写一条心得…" style="flex:1">
+      <button class="btn btn-ghost btn-sm" id="bAddNote">＋添加</button>
+    </div>
+    <label class="f-label">🖼️ 图片（可多张）</label>
+    <div id="bImgList" class="b-imgs"></div>
+    <button class="btn btn-ghost btn-sm" id="bAddImg" style="margin-top:8px">＋ 上传图片</button>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn btn-ghost" style="flex:1" id="cancelBook">取消</button>
       <button class="btn btn-primary" style="flex:1" id="saveBook">保存</button>
@@ -2235,8 +2383,29 @@ function showBookModal(bookId){
 
   document.getElementById('modalMask').classList.add('show');
 
+  const renderNotes = ()=>{
+    const el=document.getElementById('bNotesList'); if(!el) return;
+    el.innerHTML = notes.length? notes.map((n,i)=>`<div class="b-note"><span>${escapeHtml(n.text)}</span><span class="b-note-date">${n.date||''}</span><button class="close" data-nrm="${i}">&times;</button></div>`).join('') : '<div style="font-size:12px;color:var(--text-soft);padding:4px 2px">还没有心得，点上方「＋添加」记一条</div>';
+    el.querySelectorAll('[data-nrm]').forEach(b=>{ b.onclick=()=>{ notes.splice(+b.dataset.nrm,1); renderNotes(); }; });
+  };
+  const renderImgs = ()=>{
+    const el=document.getElementById('bImgList'); if(!el) return;
+    el.innerHTML = imgs.map((ref,i)=>`<div class="b-img"><img src="${mediaSrc(ref)||''}"><button class="close" data-ir="${i}">&times;</button></div>`).join('') || '<div style="font-size:12px;color:var(--text-soft);padding:4px 2px">还没有图片</div>';
+    el.querySelectorAll('[data-ir]').forEach(b=>{ b.onclick=()=>{ mediaDelete(imgs[+b.dataset.ir]); imgs.splice(+b.dataset.ir,1); renderImgs(); }; });
+  };
+  renderNotes(); renderImgs();
+
   document.getElementById('closeModal').onclick = ()=> document.getElementById('modalMask').classList.remove('show');
   document.getElementById('cancelBook').onclick = ()=> document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('bAddNote').onclick = ()=>{
+    const t=document.getElementById('bNewNote').value.trim(); if(!t) return toast('输入心得内容');
+    notes.push({text:t,date:todayStr()}); renderNotes(); document.getElementById('bNewNote').value='';
+  };
+  document.getElementById('bAddImg').onclick = async ()=>{
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true;
+    inp.onchange=async()=>{ for(const f of inp.files){ const ref=await saveImage(f); if(ref) imgs.push(ref); } renderImgs(); };
+    inp.click();
+  };
   document.getElementById('saveBook').onclick = ()=>{
     const t = document.getElementById('bTitle').value.trim();
     if(!t){ toast('请输入书名'); return; }
@@ -2248,7 +2417,9 @@ function showBookModal(bookId){
       category: document.getElementById('bCat').value,
       status: document.getElementById('bStatus').value,
       currentPage: parseInt(document.getElementById('bCurrent').value)||0,
-      addedDate: isEdit ? (book?.addedDate||todayStr()) : todayStr()
+      addedDate: isEdit ? (book?.addedDate||todayStr()) : todayStr(),
+      notes,
+      imgs
     };
     if(isEdit){
       const idx = DB.readBooks.findIndex(b=>b.id===bookId);
@@ -2293,6 +2464,7 @@ function renderEnglish(){
       <h3>🔊 美式配音 · 变速跟读</h3>
       <div class="speed-row">${[0.5,0.75,1,1.5].map(r=>`<button class="speed-btn ${r===engRate?'on':''}" data-rate="${r}">${r}×</button>`).join('')}</div>
       <label class="f-label" style="display:flex;align-items:center;gap:6px;margin-top:8px"><input type="checkbox" id="engLoop" style="width:auto" ${engLoop?'checked':''}> 单曲循环</label>
+      <label class="f-label" style="display:flex;align-items:center;gap:6px;margin-top:6px"><input type="checkbox" id="engFollow" style="width:auto" ${engFollow?'checked':''}> 🗣️ 跟读模式（读完停顿留时间给你跟读）</label>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-primary" style="flex:1" id="speakBtn">▶️ 播放</button>
         <button class="btn btn-ghost" style="flex:1" id="saveBtn">💾 保存</button>
@@ -2317,7 +2489,8 @@ function renderEnglish(){
   bindRec(t=>onSentence(t));
   pagesEl.querySelectorAll('.speed-btn').forEach(b=>{ b.onclick=()=>{ engRate=parseFloat(b.dataset.rate); pagesEl.querySelectorAll('.speed-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); }; });
   document.getElementById('engLoop').onchange=e=>{ engLoop=e.target.checked; };
-  document.getElementById('speakBtn').onclick=()=>{ const t=document.getElementById('engInput').value.trim()||document.getElementById('engPhrase').textContent; if(!t||t==='（尚未识别）') return toast('请先输入或识别语句'); speak(t, engRate, engLoop); };
+  document.getElementById('engFollow').onchange=e=>{ engFollow=e.target.checked; };
+  document.getElementById('speakBtn').onclick=()=>{ const t=document.getElementById('engInput').value.trim()||document.getElementById('engPhrase').textContent; if(!t||t==='（尚未识别）') return toast('请先输入或识别语句'); speak(t, engRate, engLoop, engFollow); };
   document.getElementById('saveBtn').onclick=()=>{ const t=document.getElementById('engInput').value.trim()||document.getElementById('engPhrase').textContent; if(!t||t==='（尚未识别）') return toast('没有可保存的句子'); DB.englishListen.saved.push(t); save(); renderSaved(); toast('已保存'); };
   document.getElementById('correctBtn').onclick=()=>{ const v=document.getElementById('engInput').value.trim(); if(v) onSentence(v); };
   document.getElementById('importBtn').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='.txt,text/plain'; inp.onchange=async()=>{ const f=inp.files[0]; if(!f)return; const txt=await readFileAsText(f); (txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean)).forEach(l=>DB.englishListen.saved.push(l)); save(); renderSaved(); toast('已导入'); }; inp.click(); };
@@ -2337,7 +2510,7 @@ function renderSaved(){
   document.querySelectorAll('#savedBox [data-lp]').forEach(b=>{ b.onclick=()=>{ const s=DB.englishListen.saved[+b.dataset.lp]; if(s) speak(s, engRate, true); }; });
   document.querySelectorAll('#savedBox [data-dels]').forEach(b=>{ b.onclick=()=>{ DB.englishListen.saved.splice(+b.dataset.dels,1); save(); renderSaved(); }; });
 }
-let listening=false, engLoop=false;
+let listening=false, engLoop=false, engFollow=false;
 function bindRec(onText){
   document.getElementById('recBtn').onclick=()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2439,9 +2612,11 @@ function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'
 
 /* TTS 美式发音 + 变速 + 单曲循环 */
 let recognition;
-function speak(text, rate, loop){
+let _speakSeq=0;
+function speak(text, rate, loop, follow){
   if(!('speechSynthesis' in window)) return toast('浏览器不支持语音合成');
   speechSynthesis.cancel();
+  const seq=++_speakSeq;
   const u = new SpeechSynthesisUtterance(text);
   u.lang='en-US';
   u.rate = rate||1;
@@ -2449,8 +2624,18 @@ function speak(text, rate, loop){
   const voices = speechSynthesis.getVoices();
   const enVoice = voices.find(v=>v.lang==='en-US' && /Samantha|Google US English|Alex/i.test(v.name)) || voices.find(v=>v.lang==='en-US');
   if(enVoice) u.voice=enVoice;
-  if(loop){ u.onend=()=>speechSynthesis.speak(u); }
+  // 跟读模式：读完自动留白（约等于原句时长）让你跟读，然后自动再读一遍
+  if(loop || follow){
+    const gap = follow ? followGap(text, u.rate) : 0;
+    u.onend = ()=>{ if(seq!==_speakSeq) return; setTimeout(()=>{ if(seq===_speakSeq) speechSynthesis.speak(u); }, gap); };
+  }
   speechSynthesis.speak(u);
+}
+/* 估算一句英文的朗读时长（毫秒），用作跟读留白时间 */
+function followGap(text, rate){
+  const words=(text.match(/[a-zA-Z']+/g)||[]).length;
+  const secs=Math.max(words/(2.6*(rate||1)), 1.4);
+  return secs*1000;
 }
 /* 文件下载 */
 function downloadFile(name, text){
