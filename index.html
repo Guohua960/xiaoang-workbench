@@ -33,6 +33,7 @@
   --sky:#a8c4d4;       --sky-soft:#d4e2ec;
   --text:#5c4a3a;      --text-soft:#9a8a7a;
   --card:#fffbf7;
+  --sel-bg:#dcc9ec;    --sel-text:#5a4a6a;   /* 首页日历选中底纹 */
   --radius:22px;
   /* 轻黏土质感：凸起 = 顶部白高光 + 底部半透明厚度 + 柔投影 */
   --clay:       inset 0 2px 3px rgba(255,255,255,.85), inset 0 -3px 5px rgba(0,0,0,.06), 0 5px 0 rgba(0,0,0,.07), 0 9px 18px rgba(140,120,100,.18);
@@ -219,7 +220,7 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
 }
 .cal-cell:active{transform:translateY(1px);box-shadow:var(--clay-press);}
 .cal-cell .dn{font-size:13px;}
-.cal-cell.today{outline:2px dashed var(--mint);outline-offset:-4px;}
+.cal-cell.today{background:var(--sel-bg) !important;color:var(--sel-text) !important;outline:2px solid rgba(140,120,100,.28);outline-offset:-4px;}
 .cal-cell.empty{background:transparent;cursor:default;box-shadow:none;}
 .cal-cell.empty::after{display:none;}
 .cal-cell.zhou{background:linear-gradient(145deg,#f0e8dc,#e2d4c0);color:#6b4f3a;}
@@ -229,6 +230,9 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
 .legend{display:flex;gap:14px;font-size:12px;color:var(--text-soft);margin:10px 0;flex-wrap:wrap;}
 .legend span{display:flex;align-items:center;gap:5px;font-weight:600;}
 .legend .sw{width:14px;height:14px;border-radius:6px;display:inline-block;box-shadow:var(--clay-soft);}
+.sel-color-row{display:flex;align-items:center;justify-content:space-between;margin-top:2px;font-size:12px;color:var(--text-soft);font-weight:600;}
+.sel-color-row .sc-label{display:flex;align-items:center;gap:6px;}
+.sel-color-row input[type="color"]{width:44px;height:30px;border:none;border-radius:9px;background:transparent;box-shadow:var(--clay-inset);cursor:pointer;padding:0;}
 
 /* ===== 全部日历 · 单日汇总 ===== */
 .summ-head{display:flex;align-items:center;justify-content:space-between;}
@@ -280,6 +284,20 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
   box-shadow:var(--clay-soft);font-weight:700;
 }
 .del-btn:active{transform:translateY(1px);box-shadow:var(--clay-press);}
+/* 古筝曲谱（单曲目多图） */
+.score-item{background:linear-gradient(145deg,#fff,#f9f4ec);border-radius:18px;padding:13px;box-shadow:var(--clay-card);margin-bottom:10px;}
+.score-item .si-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.score-item .si-title{font-weight:800;font-size:15px;color:var(--text);}
+.score-item .si-count{font-size:11px;color:var(--text-soft);background:linear-gradient(145deg,#f0eaf7,#e0d0ef);padding:3px 9px;border-radius:9px;font-weight:700;box-shadow:var(--clay-soft);}
+.score-item .si-meta{font-size:11px;color:var(--text-soft);margin-bottom:8px;}
+.score-item .si-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}
+.scr-thumb{aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:#f0eaf7;box-shadow:var(--clay-soft);}
+.scr-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.scr-thumb iframe{width:100%;height:100%;border:none;background:#fff;}
+.score-item .si-more{aspect-ratio:3/4;border-radius:10px;background:linear-gradient(145deg,#d9c9ec,#c4a882);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;box-shadow:var(--clay-soft);}
+.score-item .si-empty{font-size:12px;color:var(--text-soft);background:#f0eaf7;border-radius:10px;padding:12px;text-align:center;margin-bottom:8px;box-shadow:var(--clay-inset);}
+.score-item .si-actions{display:flex;gap:8px;}
+.score-item .si-actions .btn{flex:1;}
 .book-list{margin-top:8px;}
 .book-item{
   display:flex;align-items:center;gap:8px;
@@ -566,8 +584,9 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 
 /* 首页大时间 */
 .hero-time-v2{
-  font-size:52px;font-weight:200;color:#5c4a3a;letter-spacing:2px;
+  font-size:clamp(34px,10vw,50px);font-weight:200;color:#5c4a3a;letter-spacing:1px;
   font-variant-numeric:tabular-nums;line-height:1.1;margin:6px 0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .hero-greet-v2{
   font-size:20px;font-weight:800;color:#6b4f3a;
@@ -594,6 +613,10 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 .m-cat:active{transform:translateY(2px);box-shadow:var(--clay-press);}
 .m-cat.on{background:linear-gradient(145deg,#e8d5c4,#c4a882);color:#fff;box-shadow:var(--clay-press);}
 .m-total{font-size:16px;font-weight:800;color:#c07f6b;}
+.m-summary{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--text-soft);font-weight:600;}
+.m-summary b{color:#5c4a3a;font-size:13px;}
+.m-inc-list{margin-top:10px;border-top:1px dashed rgba(120,100,80,.2);padding-top:8px;}
+.m-inc-list .m-inc-title{font-size:12px;color:var(--text-soft);font-weight:700;margin-bottom:6px;}
 .spend-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(140,120,100,.1);}
 .spend-item:last-child{border-bottom:none;}
 .spend-ico{width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:18px;background:linear-gradient(145deg,#fff,#f5efe6);box-shadow:var(--clay-soft);flex-shrink:0;}
@@ -610,6 +633,7 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 .w-ico{font-size:28px;}
 .w-temp{font-size:30px;font-weight:800;}
 .w-cond{font-size:14px;color:var(--text-soft);}
+.w-city{margin-top:4px;font-size:12px;color:var(--text);border:none;background:rgba(255,255,255,.7);border-radius:10px;padding:5px 9px;box-shadow:var(--clay-inset);font-family:inherit;max-width:100%;}
 .w-suggest{font-size:13px;color:var(--text-soft);margin-top:6px;line-height:1.5;}
 .wardrobe-field{display:flex;gap:8px;margin-bottom:8px;}
 .wardrobe-field input, .wardrobe-field select{flex:1;}
@@ -634,6 +658,25 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 .memo-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
 .memo-filter{border:none;border-radius:12px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;background:linear-gradient(145deg,#fff,#f5efe6);color:var(--text);box-shadow:var(--clay-soft);font-family:inherit;}
 .memo-filter.on{background:linear-gradient(145deg,#d4e2ec,#a8c4d4);color:#fff;}
+/* 备忘日程日历 */
+.memo-cal-dot{width:5px;height:5px;border-radius:50%;background:#c4a882;position:absolute;bottom:5px;left:50%;transform:translateX(-50%);}
+.cal-cell .memo-cal-dot{position:absolute;}
+.mm-events{margin-top:10px;border-top:1px dashed rgba(140,120,100,.25);padding-top:8px;}
+.mm-day{font-size:13px;font-weight:800;color:#6b4f3a;margin-bottom:6px;}
+.mev-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:10px;background:linear-gradient(145deg,#f4f0e8,#ece4d6);box-shadow:var(--clay-inset);margin-bottom:7px;}
+.mev-time{font-size:13px;font-weight:800;color:#8b6f4e;background:linear-gradient(145deg,#fff,#f2e6da);padding:4px 8px;border-radius:8px;box-shadow:var(--clay-soft);min-width:52px;text-align:center;}
+.mev-main{flex:1;min-width:0;}
+.mev-title{font-size:14px;font-weight:700;color:var(--text);}
+.mev-note{font-size:11px;color:var(--text-soft);margin-top:2px;}
+/* 首页日程提醒 */
+.memo-remind{background:linear-gradient(145deg,#fff,#f3eafa);padding:12px 16px;}
+.mr-head{font-size:14px;font-weight:800;color:#6b4f3a;display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mr-count{font-size:11px;background:linear-gradient(145deg,#e0d0ef,#c4a882);color:#fff;padding:2px 8px;border-radius:9px;}
+.mr-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.mr-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--text);background:#fff;border-radius:11px;padding:5px 10px;box-shadow:var(--clay-soft);}
+.mr-time{font-size:12px;font-weight:800;color:#8b6f4e;background:linear-gradient(145deg,#f2e6da,#e2d4c0);padding:2px 6px;border-radius:7px;}
+.mr-tip{font-size:11px;color:var(--text-soft);margin-top:8px;font-weight:600;}
+.mr-empty{font-size:13px;color:var(--text-soft);font-weight:600;}
 .memo-item{display:flex;gap:10px;padding:13px;border-radius:18px;background:linear-gradient(145deg,#fff,#f9f4ec);box-shadow:var(--clay-card);margin-bottom:10px;}
 .memo-item .mi-main{flex:1;}
 .memo-item .mi-title{font-size:15px;font-weight:800;}
@@ -768,13 +811,16 @@ const DEFAULT_DATA = {
   /* ---- 新增功能存储 ---- */
   money:{budget:3000, income:5000, records:[]},          // 记账
   memo:{notes:[]},                                        // 备忘 [{id,title,cat,text,date,ts}]
+  outfitCity:'湖北省武汉市洪山区',                          // 穿搭天气城市
+  memoCalendar:[],                                        // 备忘日程 [{id,date,time,title,note,ts}]
   yangsheng:{habits:[],logs:{}},                          // 养生习惯 + 每日记录
   wardrobe:{clothes:[], today:[]},                        // 衣橱 [{id,name,color,season,style,cat,icon}]
   makeup:{tutorials:[]},                                  // 妆容教程 [{id,tag,title,img,link,fav}]
   englishListen:{saved:[], dialogue:[], weak:{}},         // 听力/对话/薄弱点
   sportVideos:{dance:[], other:[], counter:{dance:0,other:0}, goal:{dance:300,other:300}},  // 运动视频
   guzhengPlan:{basics:[],tracks:[]},                      // 古筝练习计划（基本功/曲目）
-  guzhengScores:[]                                        // 古筝曲谱（图片/PDF base64）
+  guzhengScores:[],                                       // 古筝曲谱（每个曲目含多张图片/PDF）
+  calSelColor:'#dcc9ec'                                   // 首页日历选中底纹颜色
 };
 let DB = load();
 function load(){
@@ -783,6 +829,83 @@ function load(){
 }
 function deepMerge(base,src){ for(const k in src){ if(src[k]&&typeof src[k]==='object'&&!Array.isArray(src[k])){ base[k]=base[k]||{}; deepMerge(base[k],src[k]); } else base[k]=src[k]; } return base; }
 function save(){ localStorage.setItem('xiaoang_v1', JSON.stringify(DB)); }
+
+/* ============ 媒体存储（IndexedDB，支持大视频/图片） ============ */
+/* localStorage 只有 ~5MB，存不下长视频；改用 IndexedDB 存 Blob，
+   数据里只保存引用 'm:<id>'，渲染时用 mediaSrc() 取回对象 URL。          */
+let _mediaDB;
+const MEDIA_CACHE = {};   // id -> objectURL
+const MEDIA_LOAD = {};    // id -> loading promise
+function _mediaOpen(){
+  if(_mediaDB) return _mediaDB;
+  _mediaDB = new Promise((res,rej)=>{
+    const rq = indexedDB.open('xiaoang_media', 1);
+    rq.onupgradeneeded = ()=>{ const db=rq.result; if(!db.objectStoreNames.contains('media')) db.createObjectStore('media'); };
+    rq.onsuccess = ()=>res(rq.result);
+    rq.onerror = ()=>rej(rq.error);
+  }).catch(()=>{ toast('无法使用本地存储，媒体可能无法保存'); return null; });
+  return _mediaDB;
+}
+async function mediaPut(blob){
+  const id = uid();
+  try{
+    const db = await _mediaOpen(); if(!db){ return ''; }
+    await new Promise((res,rej)=>{ const tx=db.transaction('media','readwrite'); const o=tx.objectStore('media'); o.put(blob,id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); });
+    if(MEDIA_CACHE[id]) URL.revokeObjectURL(MEDIA_CACHE[id]);
+    MEDIA_CACHE[id] = URL.createObjectURL(blob);
+    return 'm:'+id;
+  }catch(e){ console.error('mediaPut',e); toast('保存媒体失败'); return ''; }
+}
+async function mediaDelete(ref){
+  if(!ref || !ref.startsWith('m:')) return;
+  const id = ref.slice(2);
+  try{
+    const db = await _mediaOpen(); if(!db) return;
+    await new Promise((res)=>{ const tx=db.transaction('media','readwrite'); tx.objectStore('media').delete(id); tx.oncomplete=res; tx.onerror=res; });
+    if(MEDIA_CACHE[id]){ URL.revokeObjectURL(MEDIA_CACHE[id]); delete MEDIA_CACHE[id]; }
+  }catch(e){}
+}
+function mediaSrc(ref){
+  if(!ref) return '';
+  if(ref.startsWith('data:')) return ref;              // 旧 base64 兼容
+  if(ref.startsWith('m:')){
+    const id=ref.slice(2);
+    if(MEDIA_CACHE[id]) return MEDIA_CACHE[id];
+    if(!MEDIA_LOAD[id]){
+      MEDIA_LOAD[id]=(async()=>{ try{
+        const db=await _mediaOpen(); if(!db) return;
+        const blob=await new Promise((res,rej)=>{ const rq=db.transaction('media').objectStore('media').get(id); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); });
+        if(blob){ const u=URL.createObjectURL(blob); MEDIA_CACHE[id]=u; }
+      }catch(e){} })();
+    }
+    return MEDIA_CACHE[id] || '';
+  }
+  return ref; // 普通 URL
+}
+async function hydrateMedia(){
+  const walk=(o)=>{ if(!o||typeof o!=='object')return; for(const k in o){ const v=o[k]; if(typeof v==='string'&&v.startsWith('m:')){ mediaSrc(v); } else walk(v); } };
+  walk(DB); await Promise.all(Object.values(MEDIA_LOAD)); renderPage(currentPage);
+}
+/* 视频时长校验：返回 Promise<seconds>，用于 10 分钟限制 */
+function videoDuration(file){
+  return new Promise((res)=>{
+    const url=URL.createObjectURL(file), v=document.createElement('video');
+    v.preload='metadata';
+    v.onloadedmetadata=()=>{ const d=v.duration; URL.revokeObjectURL(url); res(d); };
+    v.onerror=()=>{ URL.revokeObjectURL(url); res(-1); };
+    v.src=url;
+  });
+}
+/* 保存视频到 IndexedDB，并校验时长（默认 ≤10 分钟） */
+async function saveVideo(file, maxSec){
+  const dur = await videoDuration(file);
+  if(dur>0 && dur>(maxSec||600)){ toast(`视频超过 ${Math.round((maxSec||600)/60)} 分钟，请剪辑后上传`); return ''; }
+  return await mediaPut(file);
+}
+/* 新增：存入媒体库的图片 */
+async function saveImage(file){
+  return await mediaPut(file);
+}
 
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDate(ts){ const d=new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -886,6 +1009,9 @@ function renderDaka(){
       <span style="margin-left:auto;font-size:20px">〰️</span>
     </div>
 
+    <!-- 日程简要提醒 -->
+    <div class="card memo-remind" id="memoRemind"></div>
+
     <!-- 时间问候卡片 -->
     <div class="card card-yellow">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
@@ -963,9 +1089,47 @@ function renderDaka(){
   });
 
   // 底部嵌入区块
+  embedMemoRemind();
   embedPlan();
   embedTimes();
   embedAllcal();
+}
+
+/* 首页：日程简要提醒（未来7天，小小一条，突出但不占大块） */
+function embedMemoRemind(){
+  const box=document.getElementById('memoRemind'); if(!box) return;
+  const today=todayStr();
+  // 未来7天日期集合（含今天）
+  const daySet=[]; const dayLabels={};
+  for(let i=0;i<7;i++){
+    const d=new Date(); d.setDate(d.getDate()+i);
+    const ds=fmtDate(d);
+    daySet.push(ds);
+    dayLabels[ds] = i===0?'今天':(i===1?'明天':ds.slice(5).replace('-','月')+'日');
+  }
+  const evs=(DB.memoCalendar||[]).filter(e=>daySet.indexOf(e.date)>-1).sort((a,b)=> a.date===b.date ? (a.time||'').localeCompare(b.time||'') : a.date.localeCompare(b.date));
+  if(!evs.length){
+    box.innerHTML=`<div class="mr-empty">📌 近7天暂无日程安排，可在「备忘」里添加</div>`;
+    return;
+  }
+  const chips=evs.map(e=>`<span class="mr-chip"><span class="mr-time">${dayLabels[e.date]||''} ${e.time||'--:--'}</span>${escapeHtml(e.title)}</span>`).join('');
+  box.innerHTML=`<div class="mr-head">📌 近7天日程 <span class="mr-count">${evs.length}项</span></div>
+    <div class="mr-chips">${chips}</div>
+    <div class="mr-tip"></div>`;
+  // 距最近一项（未来时间）倒计时
+  const now=Date.now();
+  let best=Infinity; let bestDate='';
+  for(const e of evs){
+    const tt=e.time&&e.time!=='--:--'?new Date(e.date+'T'+e.time).getTime():NaN;
+    if(!isNaN(tt)&&tt>now){ if(tt<best){ best=tt; bestDate=e.date; } }
+  }
+  if(best<Infinity){
+    const mins=Math.round((best-now)/60000);
+    const txt = mins>=60? `约 ${Math.floor(mins/60)}小时${mins%60}分钟` : `约 ${mins} 分钟`;
+    box.querySelector('.mr-tip').textContent='⏰ 距最近一项还有 '+txt;
+  } else {
+    box.querySelector('.mr-tip').textContent = evs.length? '✅ 近7天安排已全部完成' : '';
+  }
 }
 
 /* ---------- 古筝：日历 + 练习计划 + 在学曲谱 ---------- */
@@ -1088,47 +1252,81 @@ function renderGzScoreHTML(){
       <h3>📜 在学曲谱</h3>
       <button class="btn btn-primary btn-block" id="upScoreBtn" style="margin-bottom:10px">＋ 上传曲谱</button>
       <input type="file" id="scoreFile" accept="image/*,application/pdf" multiple style="display:none">
-      ${list.length? `<div>${list.map(s=>scoreItemHTML(s)).join('')}</div>`:`<div style="text-align:center;color:var(--text-soft);padding:14px">还没有曲谱，上传图片或 PDF 保存到本地</div>`}
+      ${list.length? `<div>${list.map(s=>scoreItemHTML(s)).join('')}</div>`:`<div style="text-align:center;color:var(--text-soft);padding:14px">还没有曲谱，点「上传曲谱」创建曲目并添加图片</div>`}
     </div>`;
 }
 function scoreItemHTML(s){
-  const isPdf=(s.file||'').startsWith('data:application/pdf');
-  const meta=s.size?`${(s.size/1024).toFixed(1)} KB`:'';
-  return `<div class="note-item" style="display:flex;gap:10px;align-items:center">
-    <div style="width:54px;height:70px;border-radius:10px;background:linear-gradient(145deg,#f0eaf7,#d9c9ec);box-shadow:var(--clay-soft);display:flex;align-items:center;justify-content:center;font-size:24px">${isPdf?'📕':'🎼'}</div>
-    <div style="flex:1">
-      <div class="n-head"><span class="n-date">${s.date||''}</span><span style="font-size:11px;color:var(--text-soft)">${meta}</span></div>
-      <div class="n-text" style="font-weight:700">${escapeHtml(s.name)}</div>
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn btn-ghost btn-sm" data-sview="${s.id}">查看</button>
-        <button class="del-btn" data-sdel="${s.id}">删除</button>
-      </div>
+  const imgs=s.images||[];
+  const n=imgs.length;
+  const thumbs=imgs.slice(0,4).map(it=>{
+    const src=mediaSrc(it.ref);
+    return it.type==='pdf'
+      ? `<div class="scr-thumb"><iframe src="${src}"></iframe></div>`
+      : `<div class="scr-thumb"><img src="${src}"></div>`;
+  }).join('');
+  const totalKB=n? (imgs.reduce((a,b)=>a+(+b.size||0),0)/1024).toFixed(1):'0';
+  return `<div class="score-item">
+    <div class="si-head">
+      <div class="si-title">🎼 ${escapeHtml(s.name)}</div>
+      <span class="si-count">${n} 张</span>
+    </div>
+    <div class="si-meta">${s.date||''}${n?' · '+totalKB+' KB':''}</div>
+    ${n?`<div class="si-thumbs">${thumbs}${n>4?`<div class="si-more">+${n-4}</div>`:''}</div>`:'<div class="si-empty">还没有图片，点「添加图片」补充</div>'}
+    <div class="si-actions">
+      <button class="btn btn-ghost btn-sm" data-sview="${s.id}">查看</button>
+      <button class="btn btn-ghost btn-sm" data-sadd="${s.id}">添加图片</button>
+      <button class="del-btn" data-sdel="${s.id}">删除</button>
     </div>
   </div>`;
 }
-function bindGzScore(){
-  document.getElementById('upScoreBtn').onclick=()=>document.getElementById('scoreFile').click();
-  document.getElementById('scoreFile').onchange=async e=>{
-    for(const f of e.target.files){
-      if(f.size>4*1024*1024){ toast('文件过大(>4MB)，请压缩'); continue; }
-      const data=await fileToDataURL(f);
-      DB.guzhengScores=DB.guzhengScores||[];
-      DB.guzhengScores.push({id:uid(),name:f.name,file:data,size:f.size,date:todayStr()});
-    }
-    save(); renderCal('guzheng'); toast('已保存曲谱');
+let scoreAppend=null; // 目标曲目id
+function showScoreModal(){
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:17px;font-weight:800">上传曲谱</div><button class="close" id="sClose2">&times;</button></div>
+    <label class="f-label">曲目名</label><input type="text" id="scName" placeholder="如：山丹丹开花红艳艳">
+    <label class="f-label">选择图片 / PDF（可多选）</label>
+    <input type="file" id="scFiles" accept="image/*,application/pdf" multiple>
+    <div style="font-size:12px;color:var(--text-soft);margin-top:6px">同一个曲目可以一次上传多张曲谱图片</div>
+    <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-ghost" style="flex:1" id="scCancel">取消</button><button class="btn btn-primary" style="flex:1" id="scSave">保存</button></div>`;
+  document.getElementById('modalMask').classList.add('show');
+  document.getElementById('sClose2').onclick=()=>document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('scCancel').onclick=()=>document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('scSave').onclick=async ()=>{
+    const name=document.getElementById('scName').value.trim(); if(!name) return toast('请输入曲目名');
+    const files=[...document.getElementById('scFiles').files]; if(!files.length) return toast('请选择图片');
+    const images=[];
+    for(const f of files){ const ref=await saveImage(f); if(ref) images.push({ref, type:(f.type==='application/pdf'||/\.pdf$/i.test(f.name))?'pdf':'image', size:f.size}); }
+    DB.guzhengScores=DB.guzhengScores||[];
+    DB.guzhengScores.unshift({id:uid(),name,date:todayStr(),images});
+    save(); document.getElementById('modalMask').classList.remove('show'); renderCal('guzheng'); toast('已保存曲谱');
   };
+}
+function bindGzScore(){
+  document.getElementById('upScoreBtn').onclick=()=>showScoreModal();
+  document.getElementById('scoreFile').onchange=async e=>{
+    const s=(DB.guzhengScores||[]).find(x=>x.id===scoreAppend); if(!s || !e.target.files.length) return;
+    for(const f of e.target.files){ const ref=await saveImage(f); if(ref) s.images.push({ref, type:(f.type==='application/pdf'||/\.pdf$/i.test(f.name))?'pdf':'image', size:f.size}); }
+    save(); renderCal('guzheng'); toast('已添加图片');
+  };
+  pagesEl.querySelectorAll('[data-sadd]').forEach(b=>{ b.onclick=()=>{ scoreAppend=b.dataset.sadd; document.getElementById('scoreFile').value=''; document.getElementById('scoreFile').click(); }; });
   pagesEl.querySelectorAll('[data-sview]').forEach(b=>{ b.onclick=()=>{
     const s=(DB.guzhengScores||[]).find(x=>x.id===b.dataset.sview);
     if(!s)return;
-    const isPdf=(s.file||'').startsWith('data:application/pdf');
+    const imgs=s.images||[];
+    const body=imgs.map(it=>{
+      const src=mediaSrc(it.ref);
+      return it.type==='pdf' ? `<iframe src="${src}" style="width:100%;height:70vh;border:none;border-radius:12px"></iframe>` : `<img src="${src}" style="width:100%;border-radius:12px;box-shadow:var(--clay-inset);margin-bottom:10px">`;
+    }).join('');
     document.getElementById('modalBody').innerHTML=`
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:16px;font-weight:800">${escapeHtml(s.name)}</div><button class="close" id="sClose">&times;</button></div>
-      ${isPdf?`<iframe src="${s.file}" style="width:100%;height:70vh;border:none;border-radius:12px"></iframe>`:`<img src="${s.file}" style="width:100%;border-radius:12px;box-shadow:var(--clay-inset)">`}`;
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:16px;font-weight:800">🎼 ${escapeHtml(s.name)}（${imgs.length}张）</div><button class="close" id="sClose">&times;</button></div>
+      <div style="max-height:68vh;overflow:auto">${body}</div>`;
     document.getElementById('modalMask').classList.add('show');
     document.getElementById('sClose').onclick=()=>document.getElementById('modalMask').classList.remove('show');
   }; });
-  pagesEl.querySelectorAll('[data-sdel]').forEach(b=>{ b.onclick=()=>{
+  pagesEl.querySelectorAll('[data-sdel]').forEach(b=>{ b.onclick=async()=>{
     if(!confirm('删除该曲谱？'))return;
+    const s=(DB.guzhengScores||[]).find(x=>x.id===b.dataset.sdel);
+    if(s){ for(const it of (s.images||[])) await mediaDelete(it.ref); }
     DB.guzhengScores=(DB.guzhengScores||[]).filter(s=>s.id!==b.dataset.sdel); save(); renderCal('guzheng');
   }; });
 }
@@ -1138,6 +1336,7 @@ let allCalView = {year:null, month:null, selected:null};
 function renderAllCal(){
   const now = new Date();
   if(!allCalView.year){ allCalView.year=now.getFullYear(); allCalView.month=now.getMonth(); allCalView.selected=todayStr(); }
+  applySelColor();
   const y=allCalView.year, m=allCalView.month, sel=allCalView.selected;
   const first = new Date(y,m,1).getDay();
   const days = new Date(y,m+1,0).getDate();
@@ -1175,7 +1374,9 @@ function renderAllCal(){
         <span><span class="sw" style="background:${SOFT_MAP.blush}"></span>1-2 项</span>
         <span><span class="sw" style="background:${SOFT_MAP.mint}"></span>3-5 项</span>
         <span><span class="sw" style="background:linear-gradient(135deg,${SOFT_MAP.blush},${SOFT_MAP.sky})"></span>6+ 项（完成度高）</span>
+        <span><span class="sw" style="background:var(--sel-bg)"></span>选中</span>
       </div>
+      <div class="sel-color-row"><span>选中底纹颜色</span><label class="sc-label">浅色<input type="color" id="allCalColor" value="${DB.calSelColor||'#dcc9ec'}"></label></div>
     </div>
     <div id="daySummary">${renderDaySummary(sel)}</div>`;
   document.getElementById('prevM2').onclick=()=>{ allCalView.month--; if(allCalView.month<0){allCalView.month=11;allCalView.year--;} renderAllCal(); };
@@ -1183,6 +1384,7 @@ function renderAllCal(){
   pagesEl.querySelectorAll('.cal-cell:not(.empty)').forEach(c=>{
     c.onclick=()=>{ allCalView.selected=c.dataset.ds; renderAllCal(); };
   });
+  document.getElementById('allCalColor').oninput=e=>{ DB.calSelColor=e.target.value; save(); applySelColor(); };
 }
 function countDayDone(ds){
   const c = DB.checks[ds]||{};
@@ -1213,8 +1415,8 @@ function renderDaySummary(ds){
     const time = DB.times[c.id] || '';
     let done=false, content='';
     if(c.id==='daka'){ /* 跳过——下方用其他表示 */ }
-    if(c.id==='guzheng'){ done=!!z.done; if(z.note) content+=`<div class="summ-text">${escapeHtml(z.note)}</div>`; if((z.videos||[]).length) content+=`<div class="summ-media">${z.videos.map(v=>`<video src="${v}" controls></video>`).join('')}</div>`; }
-    else if(c.id==='sport'){ done=!!s.done; if(s.note) content+=`<div class="summ-text">${escapeHtml(s.note)}</div>`; if((s.videos||[]).length) content+=`<div class="summ-media">${s.videos.map(v=>`<video src="${v}" controls></video>`).join('')}</div>`; }
+    if(c.id==='guzheng'){ done=!!z.done; if(z.note) content+=`<div class="summ-text">${escapeHtml(z.note)}</div>`; if((z.videos||[]).length) content+=`<div class="summ-media">${z.videos.map(v=>`<video src="${mediaSrc(v)}" controls></video>`).join('')}</div>`; }
+    else if(c.id==='sport'){ done=!!s.done; if(s.note) content+=`<div class="summ-text">${escapeHtml(s.note)}</div>`; if((s.videos||[]).length) content+=`<div class="summ-media">${s.videos.map(v=>`<video src="${mediaSrc(v)}" controls></video>`).join('')}</div>`; }
     else {
       const entries = dayEntries(c.id);
       if(entries.length){
@@ -1273,18 +1475,18 @@ function showDayDetail(ds, kind){
     <label class="f-label">上传视频</label>
     <input type="file" id="dayVideo" accept="video/*" multiple>
     <div class="media-grid" id="dayVideos">
-      ${(kind==='guzheng'?z.videos:u.videos).map(v=>`<video src="${v}" controls></video>`).join('')}
+      ${(kind==='guzheng'?z.videos:u.videos).map(v=>`<video src="${mediaSrc(v)}" controls></video>`).join('')}
     </div>
     <button class="btn btn-primary btn-block" style="margin-top:12px" id="saveDay">保存</button>`;
 
-  // 视频：转 base64 存 localStorage（小视频）
+  // 视频：存 IndexedDB（支持10分钟以内的视频）
   document.getElementById('dayVideo').addEventListener('change', async e=>{
     const kind2 = kind;
     const rec = DB[kind2][ds]||(DB[kind2][ds]={done:false,note:'',videos:[]});
-    for(const f of e.target.files){
-      if(f.size > 8*1024*1024){ toast('视频太大(>8MB)，请压缩'); continue; }
-      const data = await fileToDataURL(f);
-      rec.videos.push(data);
+    const files=[...e.target.files];
+    for(const f of files){
+      const ref = f.type.startsWith('video/')? await saveVideo(f, 600) : await mediaPut(f);
+      if(ref){ rec.videos.push(ref); }
     }
     save(); showDayDetail(ds,kind2); toast('视频已上传');
   });
@@ -1348,9 +1550,17 @@ function embedTimes(){
     save(); toast('时间已保存'); embedPlan();
   };
 }
+function applySelColor(){
+  const c=DB.calSelColor||'#dcc9ec';
+  document.documentElement.style.setProperty('--sel-bg', c);
+  const r=parseInt(c.slice(1,3),16), g=parseInt(c.slice(3,5),16), b=parseInt(c.slice(5,7),16);
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  document.documentElement.style.setProperty('--sel-text', lum>0.6?'#5a4a6a':'#fff');
+}
 function embedAllcal(){
   const box=document.getElementById('embedAllcal'); if(!box) return;
   if(!allCalView.year){ const now=new Date(); allCalView.year=now.getFullYear(); allCalView.month=now.getMonth(); allCalView.selected=todayStr(); }
+  applySelColor();
   const y=allCalView.year, m=allCalView.month, sel=allCalView.selected, now=new Date();
   const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
   let cells='';
@@ -1366,10 +1576,12 @@ function embedAllcal(){
     <div class="cal-head"><button class="btn btn-ghost btn-sm" id="epPrev">‹ 上月</button><div class="mon">${y}年${m+1}月</div><button class="btn btn-ghost btn-sm" id="epNext">› 下月</button></div>
     <div class="cal-grid">${['日','一','二','三','四','五','六'].map(w=>`<div class="wd">${w}</div>`).join('')}${cells}</div>
     <div class="legend"><span><span class="sw" style="background:${SOFT_MAP.blush}"></span>1-2项</span><span><span class="sw" style="background:${SOFT_MAP.mint}"></span>3-5项</span><span><span class="sw" style="background:linear-gradient(135deg,${SOFT_MAP.blush},${SOFT_MAP.sky})"></span>6+项</span></div>
+    <div class="sel-color-row"><span>选中底纹</span><label class="sc-label">浅色<input type="color" id="epColor" value="${DB.calSelColor||'#dcc9ec'}"></label></div>
     <div id="epSummary" style="margin-top:8px">${renderDaySummary(sel)}</div>`;
   document.getElementById('epPrev').onclick=()=>{ allCalView.month--; if(allCalView.month<0){allCalView.month=11;allCalView.year--;} embedAllcal(); };
   document.getElementById('epNext').onclick=()=>{ allCalView.month++; if(allCalView.month>11){allCalView.month=0;allCalView.year++;} embedAllcal(); };
   box.querySelectorAll('.cal-cell:not(.empty)').forEach(c=>{ c.onclick=()=>{ allCalView.selected=c.dataset.ds; embedAllcal(); }; });
+  document.getElementById('epColor').oninput=e=>{ DB.calSelColor=e.target.value; save(); applySelColor(); };
 }
 
 /* ================= 记账 ================= */
@@ -1398,6 +1610,10 @@ function renderMoney(){
   const today=todayStr();
   const todayRecs=recs.filter(r=>r.date===today);
   const todaySpend=todayRecs.filter(r=>r.type!=='income').reduce((s,r)=>s+(+r.amount||0),0);
+  const ym=today.slice(0,7);
+  const monthIncome=recs.filter(r=>r.type==='income'&&r.date.startsWith(ym)).reduce((s,r)=>s+(+r.amount||0),0);
+  const monthSpend=recs.filter(r=>r.type!=='income'&&r.date.startsWith(ym)).reduce((s,r)=>s+(+r.amount||0),0);
+  const incomeRecords=recs.filter(r=>r.type==='income'&&r.date.startsWith(ym));
   const dateOptions=[];
   for(let i=0;i<30;i++){ const d=new Date(Date.now()-i*86400000); const s=fmtDate(d); dateOptions.push(`<option value="${s}" ${s===today?'selected':''}>${s}</option>`); }
   const timeNow=new Date().toTimeString().slice(0,5);
@@ -1408,7 +1624,15 @@ function renderMoney(){
     <div class="page-sub">理性消费 · 记账理财</div>
     <div class="card">
       <div class="money-head"><div><div class="m-lab">本月预算</div><div class="m-big">¥${DB.money.budget||0}</div></div><button class="btn btn-ghost btn-sm" id="editBudget">编辑预算</button></div>
-      <div class="money-head" style="margin-top:14px"><div><div class="m-lab">本月收入</div><div class="m-big">¥${DB.money.income||0}</div></div><button class="btn btn-ghost btn-sm" id="addIncome">+收入</button></div>
+      <div class="money-head" style="margin-top:14px"><div><div class="m-lab">本月收入</div><div class="m-big">¥${monthIncome}</div></div><button class="btn btn-ghost btn-sm" id="addIncome">+收入</button></div>
+      <div class="m-summary"><span>本月支出 <b>¥${monthSpend}</b></span><span>结余 <b>¥${monthIncome-monthSpend}</b></span></div>
+      <div id="incomeBox" style="display:none;margin-top:12px">
+        <div class="m-date-row"><select id="incDate">${dateOptions.join('')}</select><input type="number" id="incAmount" placeholder="收入金额" inputmode="decimal"></div>
+        <div class="form-row"><input type="text" id="incSource" placeholder="收入来源(如工资/兼职)"></div>
+        <textarea id="incNote" placeholder="备注(可选)" style="min-height:44px"></textarea>
+        <button class="btn btn-primary btn-block" style="margin-top:10px" id="incSave">保存收入</button>
+      </div>
+      ${incomeRecords.length? `<div class="m-inc-list">${incomeRecords.map(r=>spendItemHTML(r)).join('')}</div>`:''}
     </div>
     <div class="card">
       <h3>✍️ 记一笔</h3>
@@ -1424,7 +1648,13 @@ function renderMoney(){
     </div>`;
   pagesEl.querySelectorAll('.m-cat').forEach(b=>{ b.onclick=()=>{ moneyCat=b.dataset.cat; renderMoney(); }; });
   document.getElementById('editBudget').onclick=()=>{ const v=prompt('设置本月预算(元)',DB.money.budget||''); if(v!==null){ DB.money.budget=Math.max(0,+v||0); save(); renderMoney(); } };
-  document.getElementById('addIncome').onclick=()=>{ const v=prompt('记录一笔收入金额(元)',''); if(v!==null&&(+v||0)>0){ addMoneyRecord({amount:+v,item:'收入',cat:'收入',type:'income',date:todayStr()}); save(); renderMoney(); toast('已记录收入'); } };
+  document.getElementById('addIncome').onclick=()=>{ const b=document.getElementById('incomeBox'); b.style.display=b.style.display==='none'?'block':'none'; };
+  document.getElementById('incSave').onclick=()=>{
+    const amt=+document.getElementById('incAmount').value||0;
+    if(amt<=0) return toast('请输入有效金额');
+    addMoneyRecord({amount:amt,item:document.getElementById('incSource').value.trim()||'收入',cat:'收入',type:'income',date:document.getElementById('incDate').value,note:document.getElementById('incNote').value.trim()});
+    save(); toast('已记录收入'); renderMoney();
+  };
   document.getElementById('mSave').onclick=()=>{
     const amt=+document.getElementById('mAmount').value||0;
     if(amt<=0) return toast('请输入有效金额');
@@ -1491,6 +1721,67 @@ function renderYangsheng(){
 /* ================= 备忘 ================= */
 const MEMO_CATS=['全部','日记','纪念日','穿搭记录','妆容记录','学习','其他'];
 let memoFilter='全部';
+/* ---- 备忘日程日历 ---- */
+let memoCalView = {year:null, month:null, selected:null};
+function memoEventsFor(ds){
+  return (DB.memoCalendar||[]).filter(e=>e.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+}
+function memoCalHTML(){
+  const now=new Date();
+  if(!memoCalView.year){ memoCalView.year=now.getFullYear(); memoCalView.month=now.getMonth(); memoCalView.selected=todayStr(); }
+  const y=memoCalView.year, m=memoCalView.month, sel=memoCalView.selected;
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  let cells='';
+  for(let i=0;i<first;i++) cells+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cnt=memoEventsFor(ds).length; let cls='';
+    if(sel===ds) cls=' today';
+    cells+=`<div class="cal-cell ${cls}" data-mds="${ds}">${d}${cnt?`<div class="memo-cal-dot"></div>`:''}</div>`;
+  }
+  const evs=memoEventsFor(sel);
+  return `
+    <h3>📅 日程日历</h3>
+    <div class="cal-head"><button class="btn btn-ghost btn-sm" id="mmPrev">‹ 上月</button><div class="mon">${y}年${m+1}月</div><button class="btn btn-ghost btn-sm" id="mmNext">› 下月</button></div>
+    <div class="cal-grid">${['日','一','二','三','四','五','六'].map(w=>`<div class="wd">${w}</div>`).join('')}${cells}</div>
+    <div class="mm-events">
+      <div class="mm-day">${sel} · ${evs.length?evs.length+' 项安排':'无安排'}</div>
+      ${evs.length? evs.map(ev=>memoEventItemHTML(ev)).join('') : '<div style="font-size:12px;color:var(--text-soft);padding:6px 2px;text-align:center">这一天还没安排，点下方「添加日程」记一笔</div>'}
+    </div>
+    <button class="btn btn-primary btn-block" id="addEvent">＋ 添加日程</button>`;
+}
+function memoEventItemHTML(ev){
+  return `<div class="mev-item">
+    <span class="mev-time">${ev.time||'--:--'}</span>
+    <div class="mev-main"><div class="mev-title">${escapeHtml(ev.title)}</div>${ev.note?`<div class="mev-note">${escapeHtml(ev.note)}</div>`:''}</div>
+    <button class="del-btn" data-evdel="${ev.id}">删除</button>
+  </div>`;
+}
+function bindMemoCal(){
+  document.getElementById('mmPrev').onclick=()=>{ memoCalView.month--; if(memoCalView.month<0){memoCalView.month=11;memoCalView.year--;} renderMemo(); };
+  document.getElementById('mmNext').onclick=()=>{ memoCalView.month++; if(memoCalView.month>11){memoCalView.month=0;memoCalView.year++;} renderMemo(); };
+  pagesEl.querySelectorAll('[data-mds]').forEach(c=>{ c.onclick=()=>{ memoCalView.selected=c.dataset.mds; renderMemo(); }; });
+  document.getElementById('addEvent').onclick=()=>showEventModal(memoCalView.selected);
+  pagesEl.querySelectorAll('[data-evdel]').forEach(b=>{ b.onclick=()=>{ DB.memoCalendar=(DB.memoCalendar||[]).filter(e=>e.id!==b.dataset.evdel); save(); renderMemo(); toast('已删除'); }; });
+}
+function showEventModal(date){
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:17px;font-weight:800">添加日程</div><button class="close" id="eClose">&times;</button></div>
+    <label class="f-label">日期</label><input type="date" id="eDate" value="${date||todayStr()}">
+    <label class="f-label">时间</label><input type="time" id="eTime">
+    <label class="f-label">事项</label><input type="text" id="eTitle" placeholder="如：古筝课、英语听力、取快递">
+    <label class="f-label">备注（可选）</label><input type="text" id="eNote" placeholder="补充说明">
+    <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-ghost" style="flex:1" id="eCancel">取消</button><button class="btn btn-primary" style="flex:1" id="eSave">保存</button></div>`;
+  document.getElementById('modalMask').classList.add('show');
+  document.getElementById('eClose').onclick=()=>document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('eCancel').onclick=()=>document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('eSave').onclick=()=>{
+    const title=document.getElementById('eTitle').value.trim(); if(!title) return toast('请输入事项');
+    DB.memoCalendar=DB.memoCalendar||[];
+    DB.memoCalendar.push({id:uid(),date:document.getElementById('eDate').value||todayStr(),time:document.getElementById('eTime').value||'--:--',title,note:document.getElementById('eNote').value.trim(),ts:Date.now()});
+    save(); document.getElementById('modalMask').classList.remove('show'); renderMemo(); toast('已添加日程');
+  };
+}
 function memoItemHTML(n){
   return `<div class="memo-item">
     <div class="mi-main">
@@ -1513,6 +1804,7 @@ function renderMemo(){
       <button class="memo-btn memo-io" id="memoExport">导出</button>
       <button class="memo-btn memo-io" id="memoImport">导入</button>
     </div></div>
+    <div class="card">${memoCalHTML()}</div>
     <div class="card">
       <div class="memo-filters">${MEMO_CATS.map(c=>`<button class="memo-filter ${c===memoFilter?'on':''}" data-cat="${c}">${c}</button>`).join('')}</div>
       ${filtered.length? filtered.map(n=>memoItemHTML(n)).join('') : '<div style="text-align:center;color:var(--text-soft);padding:20px">还没有笔记，点「+ 新建笔记」记录第一条吧</div>'}
@@ -1524,6 +1816,7 @@ function renderMemo(){
       <button class="dc-warn" id="dcWarn">⚠️ 清除全部数据</button>
     </div>`;
   pagesEl.querySelectorAll('.memo-filter').forEach(b=>{ b.onclick=()=>{ memoFilter=b.dataset.cat; renderMemo(); }; });
+  bindMemoCal();
   document.getElementById('memoNew').onclick=()=>showMemoModal();
   document.getElementById('memoExport').onclick=()=>{ downloadFile('晓昂备忘.json', JSON.stringify(DB.memo,null,2)); };
   document.getElementById('memoImport').onclick=()=>{
@@ -1558,6 +1851,7 @@ function showMemoModal(id){
 
 /* ================= 穿搭 + 妆容 ================= */
 let outfitTab='dress';
+const OUTFIT_CITIES=['湖北省武汉市洪山区','北京市海淀区','河南省周口市','北京市朝阳区','上海市浦东新区','广东省广州市天河区','四川省成都市武侯区','浙江省杭州市西湖区'];
 function renderOutfit(){
   pagesEl.innerHTML=`
     <h1 class="page-title">${tIcon('outfit')}穿搭</h1>
@@ -1578,7 +1872,7 @@ function renderDressHTML(){
         <span class="w-ico">☀️</span>
         <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text-soft)">天气信息</div>
           <div class="w-row"><span class="w-temp">24°C</span><span class="w-cond">晴</span></div>
-          <div style="font-size:12px;color:var(--text-soft)">湖北省武汉市洪山区</div>
+          <select id="wCity" class="w-city">${OUTFIT_CITIES.map(c=>`<option value="${c}" ${c===DB.outfitCity?'selected':''}>${c}</option>`).join('')}</select>
         </div>
         <div class="w-suggest" style="text-align:right">舒适<br>薄外套+短袖<br>刚刚好</div>
       </div>
@@ -1609,6 +1903,7 @@ function bindDress(){
   document.getElementById('saveOutfit').onclick=()=>{
     DB.wardrobe.today=[{note:document.getElementById('todayOutfit').value,date:todayStr()}]; save(); toast('穿搭已保存');
   };
+  const wc=document.getElementById('wCity'); if(wc){ wc.onchange=()=>{ DB.outfitCity=wc.value; save(); }; }
   pagesEl.querySelectorAll('[data-cdel]').forEach(b=>{ b.onclick=()=>{ DB.wardrobe.clothes=DB.wardrobe.clothes.filter(c=>c.id!==b.dataset.cdel); save(); renderOutfit(); }; });
 }
 function showClothModal(){
@@ -1705,7 +2000,7 @@ function sportVideoHTML(tab){
 function vidCardHTML(v){
   return `<div class="vid-card">
     <div class="vc-title"><span>▶️ ${escapeHtml(v.name||'运动视频')}</span><button class="vc-del" data-vdel="${v.id}">删除</button></div>
-    <video src="${v.src}" controls playsinline preload="metadata"></video>
+    <video src="${mediaSrc(v.src)}" controls playsinline preload="metadata"></video>
     <div class="vc-ctrl"><div class="vc-speed">${SPORT_RATES.map(r=>`<button class="vs-btn" data-vid="${v.id}" data-rate="${r}">${r}×</button>`).join('')}</div></div>
   </div>`;
 }
@@ -1716,8 +2011,7 @@ function bindSport(){
   document.getElementById('addVidBtn').onclick=()=>document.getElementById('vidInput').click();
   document.getElementById('vidInput').onchange=async e=>{
     const f=e.target.files[0]; if(!f)return;
-    if(f.size>6*1024*1024){ toast('视频过大(>6MB)，请压缩后再传'); return; }
-    const src=await fileToDataURL(f);
+    const src=await saveVideo(f, 600); if(!src) return;
     DB.sportVideos[sportTab].push({id:uid(),name:f.name.replace(/\.[^.]+$/,''),src}); save(); renderSport(); toast('视频已保存');
   };
   pagesEl.querySelectorAll('.vs-btn').forEach(b=>{ b.onclick=()=>{
@@ -1775,8 +2069,8 @@ function renderDiary(kind){
   document.getElementById('saveEntry').onclick=async()=>{
     const text = document.getElementById('newNote').value.trim();
     const imgs=[], videos=[];
-    if(document.getElementById('newImgs')){ for(const f of document.getElementById('newImgs').files){ if(f.size>8*1024*1024){toast('图片太大');continue;} imgs.push(await fileToDataURL(f)); } }
-    if(document.getElementById('newVideos')){ for(const f of document.getElementById('newVideos').files){ if(f.size>8*1024*1024){toast('视频太大(>8MB)');continue;} videos.push(await fileToDataURL(f)); } }
+    if(document.getElementById('newImgs')){ for(const f of document.getElementById('newImgs').files){ imgs.push(await saveImage(f)); } }
+    if(document.getElementById('newVideos')){ for(const f of document.getElementById('newVideos').files){ const s=await saveVideo(f,600); if(s) videos.push(s); } }
     if(!text && !imgs.length && !videos.length) return toast('请先填写心得或上传文件');
     DB[kind]=DB[kind]||{};
     const id=uid();
@@ -1792,8 +2086,8 @@ function renderDiary(kind){
 
 function entryHTML(en,cfg){
   const media='';
-  const imgs = (en.imgs||[]).map(s=>`<img src="${s}">`).join('');
-  const vids = (en.videos||[]).map(s=>`<video src="${s}" controls></video>`).join('');
+  const imgs = (en.imgs||[]).map(s=>`<img src="${mediaSrc(s)}">`).join('');
+  const vids = (en.videos||[]).map(s=>`<video src="${mediaSrc(s)}" controls></video>`).join('');
   return `<div class="note-item">
     <div class="n-head"><span class="n-date">${en.date}</span><button class="del-btn" data-del="${en.id}">删除</button></div>
     ${en.text?`<div class="n-text">${escapeHtml(en.text)}</div>`:''}
@@ -2172,6 +2466,12 @@ function readFileAsText(file){ return new Promise((res,rej)=>{ const r=new FileR
 // 预加载声音
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
 switchPage('daka');
+applySelColor();
+// 支持 ?page=xxx 直达指定页（如 ?page=guzheng）
+const _pageParam=new URLSearchParams(location.search).get('page');
+if(_pageParam) switchPage(_pageParam);
+// 迁移并加载媒体库里的图片/视频
+if('indexedDB' in window) hydrateMedia();
 </script>
 </body>
 </html>
