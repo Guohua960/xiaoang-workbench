@@ -46,7 +46,7 @@
 button,input,select,textarea{font-family:inherit;letter-spacing:0;}
 html,body{height:100%;}
 body{
-  font-family:"ZCOOL KuaiLe","YouYuan","幼圆","PingFang SC",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+  font-family:"Kaiti SC","楷体","KaiTi","STKaiti","SimSun","宋体","Songti SC","ZCOOL KuaiLe","YouYuan","幼圆","PingFang SC",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
   background:var(--bg); color:var(--text); overflow:hidden; line-height:1.4;
   -webkit-user-select:none;user-select:none;
 }
@@ -658,6 +658,9 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 
 /* ===== 通用 Tabs ===== */
 .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.daka-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.daka-tabs::-webkit-scrollbar{display:none;}
+.daka-tabs .tab-btn{flex:0 0 auto;white-space:nowrap;}
 .tab-btn{flex:1;min-width:70px;border:none;border-radius:14px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(145deg,#fff,#f5efe6);color:var(--text);box-shadow:var(--clay-soft);font-family:inherit;transition:all .12s;}
 .tab-btn:active{transform:translateY(2px);box-shadow:var(--clay-press);}
 .tab-btn.on{background:linear-gradient(145deg,#e8d5c4,#c4a882);color:#fff;box-shadow:var(--clay-press);}
@@ -787,9 +790,15 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 
 /* ===== 英语增强 ===== */
 .eng-saved{background:#fff;border-radius:14px;padding:8px 12px;box-shadow:var(--clay-inset);}
-.eng-saved .es-line{display:flex;align-items:center;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid rgba(140,120,100,.08);}
+.eng-saved .es-line{display:flex;flex-direction:column;gap:6px;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(140,120,100,.08);}
 .eng-saved .es-line:last-child{border-bottom:none;}
+.eng-saved .es-line.on{background:linear-gradient(145deg,#fff8e6,#f6ecd2);border-radius:10px;padding:8px;}
+.es-top{display:flex;align-items:center;gap:8px;}
 .es-text{flex:1;line-height:1.4;}
+.es-bottom{display:flex;align-items:center;gap:6px;}
+.es-rate{display:flex;gap:4px;margin-left:0;flex:1;}
+.es-rbtn{border:none;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;background:linear-gradient(145deg,#fff,#f0e8dc);color:#9a8a7a;cursor:pointer;font-family:inherit;box-shadow:var(--clay-soft);}
+.es-rbtn.on{background:linear-gradient(145deg,#e8d5c4,#c9b59a);color:#6b4f3a;}
 .es-loop{border:none;border-radius:9px;padding:4px 9px;font-size:11px;font-weight:700;background:linear-gradient(145deg,#f0e8dc,#e2d4c0);color:#6b4f3a;cursor:pointer;font-family:inherit;box-shadow:var(--clay-soft);}
 .es-loop:active{transform:translateY(1px);}
 .eng-dialog{background:#fff;border-radius:14px;padding:12px;box-shadow:var(--clay-inset);margin-bottom:10px;}
@@ -1147,6 +1156,14 @@ function getLunarDate(d){
   const lunarDay = diff % 30;
   return `农历 ${lunarMonths[lunarMonth]}${lunarDays[Math.min(lunarDay,29)]}`;
 }
+let dakaTab='overview';
+const DAKA_TABS=[
+  {id:'overview', name:'📋 今日概览'},
+  {id:'plan',     name:'📅 每日计划'},
+  {id:'schedule', name:'🕐 计划表'},
+  {id:'time',     name:'⏰ 时间段'},
+  {id:'cal',      name:'🗓 全部日历'},
+];
 function renderDaka(){
   const now = new Date();
   const timeStr = now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
@@ -1166,52 +1183,58 @@ function renderDaka(){
       <span style="margin-left:auto;font-size:20px">〰️</span>
     </div>
 
-    <!-- 日程简要提醒 -->
-    <div class="card memo-remind" id="memoRemind"></div>
+    <!-- 顶部选项卡 -->
+    <div class="tabs daka-tabs">${DAKA_TABS.map(t=>`<button class="tab-btn ${dakaTab===t.id?'on':''}" data-dtab="${t.id}">${t.name}</button>`).join('')}</div>
 
-    <!-- 时间问候卡片 -->
-    <div class="card card-yellow">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="hero-greet-v2">Hi,</div>
-          <div class="hero-sub">今天想完成什么目标呀？</div>
+    <div id="dakaBody"></div>`;
+
+  pagesEl.querySelectorAll('[data-dtab]').forEach(b=>{ b.onclick=()=>{ dakaTab=b.dataset.dtab; renderDaka(); }; });
+  renderDakaBody();
+}
+function renderDakaBody(){
+  const body=document.getElementById('dakaBody'); if(!body) return;
+  if(dakaTab==='overview'){
+    const now=new Date();
+    const timeStr=now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    const lunar=getLunarDate(now);
+    const quote=getDailyQuote();
+    body.innerHTML=`
+      <!-- 日程简要提醒 -->
+      <div class="card memo-remind" id="memoRemind"></div>
+      <!-- 时间问候卡片 -->
+      <div class="card card-yellow">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div class="hero-greet-v2">Hi,</div>
+            <div class="hero-sub">今天想完成什么目标呀？</div>
+          </div>
+          <span class="card-tag">每日共勉</span>
         </div>
-        <span class="card-tag">每日共勉</span>
+        <div class="hero-time-v2">${timeStr}</div>
+        ${lunar?`<div style="font-size:12px;color:var(--text-soft);margin-top:6px">${lunar}</div>`:''}
       </div>
-      <div class="hero-time-v2">${timeStr}</div>
-      ${lunar?`<div style="font-size:12px;color:var(--text-soft);margin-top:6px">${lunar}</div>`:''}
-    </div>
-
-    <!-- 每日金句 -->
-    <div class="card card-blue">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:15px;font-weight:800;color:#5c4a3a">💬 今日金句</span>
-        <span class="card-tag">每日共勉</span>
+      <!-- 每日金句 -->
+      <div class="card card-blue">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:15px;font-weight:800;color:#5c4a3a">💬 今日金句</span>
+          <span class="card-tag">每日共勉</span>
+        </div>
+        <div class="quote-zh">${quote.zh}</div>
+        <div class="quote-en">${quote.en}</div>
       </div>
-      <div class="quote-zh">${quote.zh}</div>
-      <div class="quote-en">${quote.en}</div>
-    </div>
-
-    <!-- 打卡：完成率 + 列表 -->
-    <div id="checkArea"></div>
-
-    <!-- 每日计划设置 -->
-    <div class="card" id="embedDailyPlan"></div>
-
-    <!-- 底部嵌入：今日计划表 -->
-    <div class="card" id="embedPlan"></div>
-    <!-- 底部嵌入：设置时间 -->
-    <div class="card" id="embedTimes"></div>
-    <!-- 底部嵌入：全部日历 -->
-    <div class="card" id="embedAllcal"></div>`;
-
-  // 底部嵌入区块
-  embedMemoRemind();
-  renderCheckArea();
-  embedDailyPlan();
-  embedPlan();
-  embedTimes();
-  embedAllcal();
+      <!-- 打卡：完成率 + 列表 -->
+      <div id="checkArea"></div>`;
+    embedMemoRemind();
+    renderCheckArea();
+  } else if(dakaTab==='plan'){
+    body.innerHTML=`<div class="card" id="embedDailyPlan"></div>`; embedDailyPlan();
+  } else if(dakaTab==='schedule'){
+    body.innerHTML=`<div class="card" id="embedPlan"></div>`; embedPlan();
+  } else if(dakaTab==='time'){
+    body.innerHTML=`<div class="card" id="embedTimes"></div>`; embedTimes();
+  } else if(dakaTab==='cal'){
+    body.innerHTML=`<div class="card" id="embedAllcal"></div>`; embedAllcal();
+  }
 }
 
 /* 首页：打卡区（完成率 + 列表），独立渲染便于局部刷新 */
@@ -1468,6 +1491,7 @@ function scoreItemHTML(s){
     ${n?`<div class="si-thumbs">${thumbs}${n>4?`<div class="si-more">+${n-4}</div>`:''}</div>`:'<div class="si-empty">还没有图片，点「添加图片」补充</div>'}
     <div class="si-actions">
       <button class="btn btn-ghost btn-sm" data-sview="${s.id}">查看</button>
+      <button class="btn btn-ghost btn-sm" data-srename="${s.id}">改名</button>
       <button class="btn btn-ghost btn-sm" data-sadd="${s.id}">添加图片</button>
       <button class="del-btn" data-sdel="${s.id}">删除</button>
     </div>
@@ -1503,6 +1527,11 @@ function bindGzScore(){
     save(); renderCal('guzheng'); toast('已添加图片');
   };
   pagesEl.querySelectorAll('[data-sadd]').forEach(b=>{ b.onclick=()=>{ scoreAppend=b.dataset.sadd; document.getElementById('scoreFile').value=''; document.getElementById('scoreFile').click(); }; });
+  pagesEl.querySelectorAll('[data-srename]').forEach(b=>{ b.onclick=()=>{
+    const s=(DB.guzhengScores||[]).find(x=>x.id===b.dataset.srename); if(!s)return;
+    const v=prompt('修改曲目名', s.name); if(v===null) return; if(!v.trim()) return toast('名称不能为空');
+    s.name=v.trim(); save(); renderCal('guzheng'); toast('已改名');
+  }; });
   pagesEl.querySelectorAll('[data-sview]').forEach(b=>{ b.onclick=()=>{
     const s=(DB.guzhengScores||[]).find(x=>x.id===b.dataset.sview);
     if(!s)return;
@@ -2128,12 +2157,10 @@ async function loadWeather(){
     const c=f.current||{};
     const temp=Math.round(c.temperature_2m);
     const wm=weatherMeta(c.weather_code);
-    const sug=clothingSug(temp, wm.kind);
     const set=(id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent=txt; };
     set('wTemp', temp+'°C');
     set('wCond', wm.text+' · '+wm.emoji);
     const ic=document.getElementById('wIco'); if(ic) ic.textContent=wm.emoji;
-    set('wSuggest', sug);
     set('wTime', '更新于 '+new Date().toTimeString().slice(0,5));
     DB._weather={temp, code:c.weather_code, text:wm.text, kind:wm.kind, time:Date.now()};
   }catch(e){ console.warn('weather fail', e); }
@@ -2187,7 +2214,6 @@ function renderDressHTML(){
           <select id="wCity" class="w-city">${OUTFIT_CITIES.map(c=>`<option value="${c}" ${c===DB.outfitCity?'selected':''}>${c}</option>`).join('')}</select>
           <div id="wTime" style="font-size:11px;color:var(--text-soft);margin-top:4px"></div>
         </div>
-        <div class="w-suggest" id="wSuggest" style="text-align:right">实时天气<br>智能穿搭建议</div>
       </div>
     </div>
     <div class="card">
@@ -2401,11 +2427,45 @@ function renderDiary(kind){
     DB[kind][id]={id,date:todayStr(),ts:Date.now(),text,imgs,videos};
     save(); renderDiary(kind); toast('已发布');
   };
-  // 删除
+  // 编辑 / 删除
   pagesEl.querySelector('#entries').addEventListener('click',e=>{
+    const ed=e.target.closest('[data-dedit]'); if(ed){ showDiaryModal(kind, ed.dataset.dedit); return; }
     const d=e.target.closest('[data-del]'); if(!d) return;
     delete DB[kind][d.dataset.del]; save(); renderDiary(kind);
   });
+}
+function showDiaryModal(kind, id){
+  const en=DB[kind]&&DB[kind][id]; if(!en) return;
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:17px;font-weight:800">编辑心得</div><button class="close" id="dClose">&times;</button></div>
+    <label class="f-label">心得</label><textarea id="deText" style="min-height:80px">${escapeHtml(en.text||'')}</textarea>
+    <label class="f-label">🖼️ 图片</label>
+    <div class="me-media" id="deImgs"></div>
+    <input type="file" id="deAddImgs" accept="image/*" multiple>
+    <label class="f-label" style="margin-top:10px">🎬 视频</label>
+    <div class="me-media" id="deVids"></div>
+    <input type="file" id="deAddVids" accept="video/*" multiple>
+    <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-ghost" style="flex:1" id="deCancel">取消</button><button class="btn btn-primary" style="flex:1" id="deSave">保存</button></div>`;
+  document.getElementById('modalMask').classList.add('show');
+  let imgs=(en.imgs||[]).slice(); let vids=(en.videos||[]).slice();
+  const renderM=()=>{
+    document.getElementById('deImgs').innerHTML=imgs.map((s,i)=>`<div class="me-thumb"><img src="${mediaSrc(s)}"><button class="me-x" data-rmimg="${i}">✕</button></div>`).join('');
+    document.getElementById('deVids').innerHTML=vids.map((s,i)=>`<div class="me-thumb"><video src="${mediaSrc(s)}"></video><button class="me-x" data-rmvid="${i}">✕</button></div>`).join('');
+  };
+  renderM();
+  const clo=()=>document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('dClose').onclick=clo; document.getElementById('deCancel').onclick=clo;
+  document.getElementById('deImgs').addEventListener('click',e=>{ const b=e.target.closest('[data-rmimg]'); if(!b)return; imgs.splice(+b.dataset.rmimg,1); renderM(); });
+  document.getElementById('deVids').addEventListener('click',e=>{ const b=e.target.closest('[data-rmvid]'); if(!b)return; vids.splice(+b.dataset.rmvid,1); renderM(); });
+  document.getElementById('deAddImgs').onchange=async e=>{ for(const f of e.target.files){ const r=await saveImage(f); if(r) imgs.push(r); } renderM(); };
+  document.getElementById('deAddVids').onchange=async e=>{ for(const f of e.target.files){ const s=await saveVideo(f,600); if(s) vids.push(s); } renderM(); };
+  document.getElementById('deSave').onclick=()=>{
+    const text=document.getElementById('deText').value.trim();
+    const old=DB[kind][id];
+    (old.imgs||[]).forEach(s=>{ if(imgs.indexOf(s)<0) mediaDelete(s); });
+    (old.videos||[]).forEach(s=>{ if(vids.indexOf(s)<0) mediaDelete(s); });
+    DB[kind][id]={...old,text,imgs,videos:vids}; save(); clo(); renderDiary(kind); toast('已保存修改');
+  };
 }
 
 function entryHTML(en,cfg){
@@ -2413,7 +2473,7 @@ function entryHTML(en,cfg){
   const imgs = (en.imgs||[]).map(s=>`<img src="${mediaSrc(s)}">`).join('');
   const vids = (en.videos||[]).map(s=>`<video src="${mediaSrc(s)}" controls></video>`).join('');
   return `<div class="note-item">
-    <div class="n-head"><span class="n-date">${en.date}</span><button class="del-btn" data-del="${en.id}">删除</button></div>
+    <div class="n-head"><span class="n-date">${en.date}</span><span style="flex:1"></span><button class="del-btn" data-dedit="${en.id}">编辑</button><button class="del-btn" data-del="${en.id}">删除</button></div>
     ${en.text?`<div class="n-text">${escapeHtml(en.text)}</div>`:''}
     ${(imgs||vids)?`<div class="media-grid">${imgs}${vids}</div>`:''}
   </div>`;
@@ -2786,26 +2846,51 @@ function renderEnglish(){
   document.getElementById('importBtn').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='.txt,text/plain'; inp.onchange=async()=>{ const f=inp.files[0]; if(!f)return; const txt=await readFileAsText(f); (txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean)).forEach(l=>DB.englishListen.saved.push(l)); save(); renderSaved(); toast('已导入'); }; inp.click(); };
   document.getElementById('exportBtn').onclick=()=>{ downloadFile('晓昂听力.txt', saved.join('\n')); };
 }
+let _savedRate=[], _savedPlayIdx=null;
 function engSavedHTML(saved){
-  return `<div class="eng-saved">${saved.map((s,i)=>`
-    <div class="es-line">
-      <button class="es-loop" data-play="${i}" title="朗读">▶️</button>
-      <span class="es-text">${escapeHtml(s)}</span>
-      <button class="es-loop" data-edit="${i}" title="修改">✏️</button>
-      <button class="es-loop" data-dels="${i}" title="删除">✕</button>
-    </div>`).join('')}</div>`;
+  return `<div class="eng-saved">${saved.map((s,i)=>esLineHTML(s,i)).join('')}</div>`;
+}
+function esLineHTML(s,i){
+  const rate=_savedRate[i]||1; const playing=_savedPlayIdx===i;
+  return `<div class="es-line ${playing?'on':''}">
+    <div class="es-top"><span class="es-text">${escapeHtml(s)}</span><button class="es-loop" data-splay="${i}" title="${playing?'暂停':'朗读'}">${playing?'⏸️':'▶️'}</button></div>
+    <div class="es-bottom">
+      <div class="es-rate">${[0.5,0.75,1].map(r=>`<button class="es-rbtn ${r===rate?'on':''}" data-srate="${i}" data-r="${r}">${r}×</button>`).join('')}</div>
+      <button class="es-loop" data-sedit="${i}" title="修改">✏️</button>
+      <button class="es-loop" data-sdel="${i}" title="删除">✕</button>
+    </div>
+  </div>`;
 }
 function renderSaved(){
   const box=document.getElementById('savedBox'); const saved=DB.englishListen.saved||[]; if(!box)return;
+  while(_savedRate.length<saved.length) _savedRate.push(1);
+  if(_savedRate.length>saved.length){ _savedRate.length=saved.length; if(_savedPlayIdx>=saved.length) _savedPlayIdx=null; }
   box.innerHTML=saved.length? engSavedHTML(saved) : '<div style="text-align:center;color:var(--text-soft);padding:14px">还没有保存的听力文本</div>';
-  document.querySelectorAll('#savedBox [data-play]').forEach(b=>{ b.onclick=()=>{ const s=DB.englishListen.saved[+b.dataset.play]; if(s){ setTts('🔊 朗读中'); speak(s, engRate, true); } }; });
-  document.querySelectorAll('#savedBox [data-edit]').forEach(b=>{ b.onclick=()=>{
-    const i=+b.dataset.edit; const old=DB.englishListen.saved[i];
+  box.querySelectorAll('[data-srate]').forEach(b=>{ b.onclick=()=>{ _savedRate[+b.dataset.srate]=parseFloat(b.dataset.r); renderSaved(); }; });
+  box.querySelectorAll('[data-splay]').forEach(b=>{ b.onclick=()=>toggleSavedPlay(+b.dataset.splay); });
+  box.querySelectorAll('[data-sedit]').forEach(b=>{ b.onclick=()=>{
+    const i=+b.dataset.sedit; const old=DB.englishListen.saved[i];
     const v=prompt('修改这条听力文本', old); if(v===null) return;
     if(!v.trim()) return toast('内容不能为空');
     DB.englishListen.saved[i]=v.trim(); save(); renderSaved(); toast('已修改');
   }; });
-  document.querySelectorAll('#savedBox [data-dels]').forEach(b=>{ b.onclick=()=>{ DB.englishListen.saved.splice(+b.dataset.dels,1); save(); renderSaved(); }; });
+  box.querySelectorAll('[data-sdel]').forEach(b=>{ b.onclick=()=>{
+    const i=+b.dataset.sdel; DB.englishListen.saved.splice(i,1); _savedRate.splice(i,1);
+    if(_savedPlayIdx===i) _savedPlayIdx=null; else if(_savedPlayIdx>i) _savedPlayIdx--;
+    save(); renderSaved();
+  }; });
+}
+function toggleSavedPlay(i){
+  const s=DB.englishListen.saved[i]; if(!s) return;
+  if(_savedPlayIdx===i){ stopSpeak(); _savedPlayIdx=null; renderSaved(); return; }
+  const seq=++_speakSeq;
+  _savedPlayIdx=i;
+  speechSynthesis.cancel();
+  const u=makeUtterance(s, _savedRate[i]||1);
+  u.onend=()=>{ if(seq!==_speakSeq) return; _savedPlayIdx=null; renderSaved(); };
+  speechSynthesis.speak(u);
+  setTts('🔊 朗读中 '+( _savedRate[i]||1)+'× · 点 ⏸️ 可暂停');
+  renderSaved();
 }
 let listening=false, engLoop=false, engFollow=false;
 function bindRec(onText){
