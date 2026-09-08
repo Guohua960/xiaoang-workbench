@@ -235,6 +235,21 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
 .cal-cell.yun{background:linear-gradient(145deg,#d4e2ec,#a8c4d4);color:#3a5a6a;}
 .cal-cell.both{background:linear-gradient(145deg,#e2d4c0,#a8c4d4);color:#fff;}
 .cal-cell.some{background:linear-gradient(145deg,#f0e8dc,#c4a882);color:#5c4a3a;}
+.cal-cell.period{background:linear-gradient(145deg,#f0bcd0,#e8a8c0)!important;color:#fff!important;}
+/* 生理期日历：今日用淡粉描边，选中范围内才显示强粉色 */
+#ysCal .cal-cell.today{background:#fdf3f7!important;color:#b0648c!important;outline:2px solid rgba(206,130,168,.5)!important;outline-offset:-3px;}
+#ysCal .cal-cell.period.today{background:linear-gradient(145deg,#f0bcd0,#e8a8c0)!important;color:#fff!important;outline:2px solid rgba(158,74,110,.45)!important;outline-offset:-3px;}
+.ys-sel-status{min-height:20px;margin:8px 0 2px;font-size:12px;font-weight:700;}
+.ys-sel-ok{color:#c74f8a;}
+.ys-sel-tip{color:var(--text-soft);font-weight:600;}
+.ys-saved-empty{color:var(--text-soft);font-size:12px;text-align:center;padding:14px;}
+.ys-saved-item{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px dashed rgba(140,120,100,.18);}
+.ys-saved-item:last-child{border-bottom:none;}
+.ys-saved-dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(145deg,#f0bcd0,#e8a8c0);box-shadow:var(--clay-soft);flex:none;}
+.ys-saved-info{flex:1;min-width:0;}
+.ys-saved-t{font-size:13px;font-weight:800;}
+.ys-saved-r{font-size:11px;color:var(--text-soft);margin-top:1px;}
+.ys-saved-note{font-size:11px;color:var(--text-soft);max-width:40%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--text-soft);margin:10px 0;flex-wrap:wrap;}
 .legend span{display:flex;align-items:center;gap:5px;font-weight:600;}
 .legend .sw{width:14px;height:14px;border-radius:6px;display:inline-block;box-shadow:var(--clay-soft);}
@@ -664,6 +679,12 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 .tab-btn{flex:1;min-width:70px;border:none;border-radius:14px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(145deg,#fff,#f5efe6);color:var(--text);box-shadow:var(--clay-soft);font-family:inherit;transition:all .12s;}
 .tab-btn:active{transform:translateY(2px);box-shadow:var(--clay-press);}
 .tab-btn.on{background:linear-gradient(145deg,#e8d5c4,#c4a882);color:#fff;box-shadow:var(--clay-press);}
+.tab-ren{flex:0 0 auto;width:34px;height:34px;border:none;border-radius:12px;background:linear-gradient(145deg,#fff,#f5efe6);color:#a68b76;box-shadow:var(--clay-soft);cursor:pointer;font-size:15px;align-self:center;transition:all .12s;}
+.tab-ren:active{transform:translateY(2px);box-shadow:var(--clay-press);}
+/* 计划表内联时间选择 */
+.plan-time-set{display:flex;align-items:center;gap:4px;flex:1;justify-content:flex-end;}
+.plan-time-set .ptime{width:98px;box-shadow:var(--clay-inset);background:linear-gradient(145deg,#fff,#f5efe6);border-radius:11px;padding:7px 6px;font-size:13px;}
+.plan-time-set .pt-dash{color:var(--text-soft);font-weight:700;}
 
 /* ===== 记账 ===== */
 .money-head{display:flex;align-items:center;justify-content:space-between;}
@@ -938,7 +959,9 @@ const DEFAULT_DATA = {
   guzhengPlan:{basics:[],tracks:[]},                      // 古筝练习计划（基本功/曲目）
   guzhengScores:[],                                       // 古筝曲谱（每个曲目含多张图片/PDF）
   calSelColor:'#dcc9ec',                                   // 首页日历选中底纹颜色
-  photo:[]                                                // 摄影作品 [{id,name,text,imgs,vids,date,ts}]
+  photo:[],                                               // 摄影作品 [{id,name,text,imgs,vids,date,ts}]
+  tabNames:{},                                            // 各种选项卡自定义名称 {命名空间:{选项卡id:新名称}}
+  period:{months:{}, notes:{}}                            // 生理期记录：months['YYYY-MM']={start,end}；notes['YYYY-MM']=备注
 };
 let DB = load();
 if(!DB.cats || !DB.cats.length) DB.cats = CATS.map(c=>({id:c.id,name:c.name,emoji:c.emoji,color:c.color,soft:c.soft}));
@@ -1046,6 +1069,40 @@ const CATS2 = [
 const sidebar = document.getElementById('sidebar');
 let currentPage = 'daka';
 function getCats(){ return (DB.cats&&DB.cats.length)? DB.cats : CATS; }
+
+/* ===== 选项卡名称注册（所有选项卡名字都可随时改名） ===== */
+const TAB_NS = {
+  daka:  {overview:'📋 今日概览', plan:'📅 每日计划', schedule:'🕐 计划表', cal:'🗓 全部日历'},
+  gz:    {cal:'📅 日历', plan:'🎯 练习计划', score:'📜 在学曲谱'},
+  sport: {dance:'💃 舞蹈', other:'🏋️ 其他'},
+  outfit:{dress:'👕 穿搭', makeup:'💄 妆容'},
+  ys:    {habit:'🌱 今日习惯', period:'🌙 生理期记录'},
+};
+// 取一个选项卡的显示名（优先用户自定义）
+function tabLabel(ns, id){ const m=DB.tabNames&&DB.tabNames[ns]; return (m&&m[id])||(TAB_NS[ns]&&TAB_NS[ns][id])||id; }
+// 给一个选项卡条追加「✏️ 重命名」按钮
+function renameBtnHTML(ns){ return `<button class="tab-ren" data-tabren="${ns}" title="重命名选项卡">✏️</button>`; }
+/* 重命名某个系列的所有选项卡 */
+function showTabRenameModal(ns){
+  const defs=TAB_NS[ns]; if(!defs) return;
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:17px;font-weight:800">✏️ 重命名选项卡</div><button class="close" id="trClose">&times;</button></div>
+    <div class="page-sub" style="margin-bottom:12px">修改后点「保存」，名称会立即在所有地方生效</div>
+    ${Object.keys(defs).map(id=>`
+      <label class="f-label">${defs[id]}</label>
+      <input type="text" data-trkey="${id}" value="${escapeHtml(tabLabel(ns,id))}" maxlength="16">
+    `).join('')}
+    <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-ghost" style="flex:1" id="trCancel">取消</button><button class="btn btn-primary" style="flex:1" id="trSave">保存</button></div>`;
+  document.getElementById('modalMask').classList.add('show');
+  const clo=()=>document.getElementById('modalMask').classList.remove('show');
+  document.getElementById('trClose').onclick=clo; document.getElementById('trCancel').onclick=clo;
+  document.getElementById('trSave').onclick=()=>{
+    DB.tabNames=DB.tabNames||{};
+    const m={};
+    document.querySelectorAll('#modalBody [data-trkey]').forEach(inp=>{ const v=inp.value.trim(); m[inp.dataset.trkey]=v||defs[inp.dataset.trkey]; });
+    DB.tabNames[ns]=m; save(); clo(); switchPage(currentPage); toast('已重命名');
+  };
+}
 function renderSidebar(){
   sidebar.innerHTML = '<div class="logo">'+'<svg viewBox="0 0 44 44" width="34" height="34"><rect x="3" y="3" width="38" height="38" rx="12" fill="url(#gglogo)" stroke="#c4a882" stroke-width="1.6"/><defs><linearGradient id="gglogo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#f2e6da"/></linearGradient></defs><path d="M22 8c3.5 4.5 7 8.5 7 14a7 7 0 0 1-14 0c0-5.5 3.5-9.5 7-14z" fill="#b5d8a0" stroke="#5c7a4a" stroke-width="2"/><path d="M22 12v17" stroke="#5c7a4a" stroke-width="1.6"/><path d="M22 18l-4.5-2.5M22 22l4.5-2.5M22 26l-4 2" stroke="#5c7a4a" stroke-width="1.4" stroke-linecap="round"/><circle cx="31" cy="12" r="2.6" fill="#ffd6e0" stroke="#c4a882" stroke-width="1"/></svg>'+'</div>' + getCats().map((c,i)=>`
   <button class="nav-item" data-id="${c.id}" title="${c.name}">
@@ -1105,6 +1162,7 @@ function switchPage(id){  currentPage = id;
 
 /* ================= 页面渲染 ================= */
 const pagesEl = document.getElementById('pages');
+pagesEl.addEventListener('click', e=>{ const tb=e.target.closest('[data-tabren]'); if(tb){ e.stopPropagation(); showTabRenameModal(tb.dataset.tabren); } });
 function renderPage(id){
   switch(id){
     case 'daka': renderDaka(); break;
@@ -1158,11 +1216,10 @@ function getLunarDate(d){
 }
 let dakaTab='overview';
 const DAKA_TABS=[
-  {id:'overview', name:'📋 今日概览'},
-  {id:'plan',     name:'📅 每日计划'},
-  {id:'schedule', name:'🕐 计划表'},
-  {id:'time',     name:'⏰ 时间段'},
-  {id:'cal',      name:'🗓 全部日历'},
+  {id:'overview'},
+  {id:'plan'},
+  {id:'schedule'},
+  {id:'cal'},
 ];
 function renderDaka(){
   const now = new Date();
@@ -1184,7 +1241,7 @@ function renderDaka(){
     </div>
 
     <!-- 顶部选项卡 -->
-    <div class="tabs daka-tabs">${DAKA_TABS.map(t=>`<button class="tab-btn ${dakaTab===t.id?'on':''}" data-dtab="${t.id}">${t.name}</button>`).join('')}</div>
+    <div class="tabs daka-tabs">${DAKA_TABS.map(t=>`<button class="tab-btn ${dakaTab===t.id?'on':''}" data-dtab="${t.id}">${tabLabel('daka',t.id)}</button>`).join('')}${renameBtnHTML('daka')}</div>
 
     <div id="dakaBody"></div>`;
 
@@ -1222,64 +1279,35 @@ function renderDakaBody(){
         <div class="quote-zh">${quote.zh}</div>
         <div class="quote-en">${quote.en}</div>
       </div>
-      <!-- 打卡：完成率 + 列表 -->
-      <div id="checkArea"></div>`;
+      <!-- 完成率（不再显示任务清单版块） -->
+      <div id="checkRate"></div>`;
     embedMemoRemind();
-    renderCheckArea();
+    renderCheckRate();
   } else if(dakaTab==='plan'){
     body.innerHTML=`<div class="card" id="embedDailyPlan"></div>`; embedDailyPlan();
   } else if(dakaTab==='schedule'){
     body.innerHTML=`<div class="card" id="embedPlan"></div>`; embedPlan();
-  } else if(dakaTab==='time'){
-    body.innerHTML=`<div class="card" id="embedTimes"></div>`; embedTimes();
   } else if(dakaTab==='cal'){
     body.innerHTML=`<div class="card" id="embedAllcal"></div>`; embedAllcal();
   }
 }
 
-/* 首页：打卡区（完成率 + 列表），独立渲染便于局部刷新 */
-function checkAreaHTML(){
+/* 首页：完成率（独立渲染，便于计划变动后局部刷新） */
+function checkRateHTML(){
   const t = todayStr();
   const checks = DB.checks[t] || {};
   const plan = dayPlanList(t);
   const doneCount = plan.filter(x=>checks[x.id]).length;
   const totalPlan = plan.length;
   const pct = totalPlan ? Math.round(doneCount/totalPlan*100) : 0;
-  const rateHTML = `<div class="rate-wrap">
+  return `<div class="rate-wrap">
     <div class="rate-top"><span class="rate-label">🎯 今日完成率</span><span class="rate-pct">${pct}%</span></div>
     <div class="rate-bar"><div class="rate-fill" style="width:${pct}%"></div></div>
-    <div class="rate-sub">${totalPlan ? `已完成 ${doneCount} / ${totalPlan} 项计划${pct===100?' 🎉':''}` : '今天还没有安排计划，去下方「每日计划」里添加'}</div>
+    <div class="rate-sub">${totalPlan ? `已完成 ${doneCount} / ${totalPlan} 项计划${pct===100?' 🎉':''}` : '今天还没有安排计划，去「每日计划」里添加'}</div>
   </div>`;
-  const listHTML = plan.length ? plan.map(task=>{
-    const done = !!checks[task.id];
-    return `<div class="mini-check-item ${done?'done':''}" data-id="${task.id}">
-      <span class="mc-ico">${task.emoji}</span>
-      <div style="flex:1">
-        <div class="mc-name">${task.name}</div>
-        ${DB.times[task.id]?`<div class="mc-time">🕐 ${DB.times[task.id]}</div>`:''}
-      </div>
-      ${done
-        ? `<span class="mc-done">✅</span><button class="mc-btn" data-act="reset" style="font-size:14px">↩️</button>`
-        : `<button class="mc-btn" data-act="yes">✓</button>`}
-    </div>`;
-  }).join('') : '<div style="text-align:center;color:var(--text-soft);padding:18px">今天没有安排计划 🍃<br><span style="font-size:11px">点下方「每日计划」勾选今天要做的事</span></div>';
-  return rateHTML + `<div style="margin-bottom:8px">${listHTML}</div>`;
 }
-function renderCheckArea(){
-  const area=document.getElementById('checkArea'); if(!area) return;
-  area.innerHTML = checkAreaHTML();
-  area.querySelectorAll('.mini-check-item').forEach(item=>{
-    item.addEventListener('click', e=>{
-      const act = e.target.closest('[data-act]')?.dataset.act;
-      const id = item.dataset.id;
-      if(!act) return;
-      const t=todayStr();
-      DB.checks[t] = DB.checks[t] || {};
-      if(act==='yes'){ DB.checks[t][id]=true; toast('已打卡 ✓'); }
-      else { DB.checks[t][id]=false; }
-      save(); renderCheckArea();
-    });
-  });
+function renderCheckRate(){
+  const el=document.getElementById('checkRate'); if(el) el.innerHTML=checkRateHTML();
 }
 
 /* 首页：每日计划编辑（按星期几勾选当天要做的类别） */
@@ -1306,10 +1334,10 @@ function embedDailyPlan(){
     DB.weeklyPlan=DB.weeklyPlan||{}; DB.weeklyPlan[dpDay]=list; save();
     b.classList.toggle('on', on);
     const tick=b.querySelector('.dp-tick'); if(tick) tick.textContent=on?'✓':'';
-    renderCheckArea();
+    renderCheckRate();
   }; });
-  document.getElementById('dpAll').onclick=()=>{ DB.weeklyPlan=DB.weeklyPlan||{}; DB.weeklyPlan[dpDay]=cats.map(c=>c.id); save(); renderCheckArea(); embedDailyPlan(); };
-  document.getElementById('dpNone').onclick=()=>{ DB.weeklyPlan=DB.weeklyPlan||{}; DB.weeklyPlan[dpDay]=[]; save(); renderCheckArea(); embedDailyPlan(); };
+  document.getElementById('dpAll').onclick=()=>{ DB.weeklyPlan=DB.weeklyPlan||{}; DB.weeklyPlan[dpDay]=cats.map(c=>c.id); save(); renderCheckRate(); embedDailyPlan(); };
+  document.getElementById('dpNone').onclick=()=>{ DB.weeklyPlan=DB.weeklyPlan||{}; DB.weeklyPlan[dpDay]=[]; save(); renderCheckRate(); embedDailyPlan(); };
 }
 
 /* 首页：日程简要提醒（未来7天，小小一条，突出但不占大块） */
@@ -1358,9 +1386,7 @@ function renderCal(kind){
       <h1 class="page-title">${tIcon('guzheng')}古筝</h1>
       <div class="page-sub">练习日历 · 练习计划 · 在学曲谱</div>
       <div class="tabs">
-        <button class="tab-btn ${guzhengTab==='cal'?'on':''}" data-tab="cal">📅 日历</button>
-        <button class="tab-btn ${guzhengTab==='plan'?'on':''}" data-tab="plan">🎯 练习计划</button>
-        <button class="tab-btn ${guzhengTab==='score'?'on':''}" data-tab="score">📜 在学曲谱</button>
+        ${['cal','plan','score'].map(id=>`<button class="tab-btn ${guzhengTab===id?'on':''}" data-tab="${id}">${tabLabel('gz',id)}</button>`).join('')}${renameBtnHTML('gz')}
       </div>
       <div id="gzTabContent">${guzhengTab==='cal'?renderGzCalHTML():guzhengTab==='plan'?renderGzPlanHTML():renderGzScoreHTML()}</div>`;
     pagesEl.querySelectorAll('.tab-btn').forEach(b=>{ b.onclick=()=>{ guzhengTab=b.dataset.tab; renderCal('guzheng'); }; });
@@ -1755,16 +1781,37 @@ function embedPlan(){
   const timed=withTime.filter(x=>x.time).sort((a,b)=>a.start.localeCompare(b.start));
   const untimed=withTime.filter(x=>!x.time);
   const ordered=timed.concat(untimed);
-  box.innerHTML=`<div class="embed-head"><span class="eh-title">📋 今日计划表（${plan.length}项）</span></div>
+  box.innerHTML=`<div class="embed-head"><span class="eh-title">📋 今日计划表（每类可选时间 / 可打卡）</span></div>
     ${ordered.length? ordered.map(it=>{
       const done=checks[it.id];
+      const end=it.time.split('-')[1]||'';
       return `<div class="plan-item" style="background:${COLOR_MAP[it.color]}22">
-        ${it.time?`<div class="plan-time" style="background:${COLOR_MAP[it.color]}">${it.time}</div>`:`<div class="plan-time" style="background:#e6ddd0;color:#8a7a6a">未定</div>`}
         <span class="plan-ico">${it.emoji}</span>
-        <div class="plan-name">${it.name}</div>
-        ${done?'<span style="font-size:16px">✅</span>':'<span class="plan-tag">待完成</span>'}
+        <div class="plan-name">${escapeHtml(it.name)}</div>
+        <div class="plan-time-set">
+          <input type="time" class="ptime" value="${it.start}" data-id="${it.id}" data-part="start">
+          <span class="pt-dash">–</span>
+          <input type="time" class="ptime" value="${end}" data-id="${it.id}" data-part="end">
+        </div>
+        <button class="mc-btn ${done?'':''}" data-check="${it.id}" title="${done?'取消打卡':'标记完成'}">${done?'✅':'✓'}</button>
       </div>`;
-    }).join('') : '<div style="text-align:center;color:var(--text-soft);padding:14px">今天没有安排计划，去「每日计划」里添加</div>'}`;
+    }).join('') : '<div style="text-align:center;color:var(--text-soft);padding:14px">今天没有安排计划，去「每日计划」里添加</div>'}
+    ${ordered.length?`<div class="dp-foot"><button class="btn btn-ghost btn-sm" id="epClear">清空时间</button><button class="btn btn-primary" id="epSaveTimes" style="flex:1">💾 保存时间段</button></div>`:`<div style="margin-top:10px"><button class="btn btn-ghost btn-block" id="epGotoPlan">去「每日计划」添加</button></div>`}`;
+  box.querySelectorAll('[data-check]').forEach(b=>{ b.onclick=()=>{ DB.checks[t]=DB.checks[t]||{}; DB.checks[t][b.dataset.check]=!DB.checks[t][b.dataset.check]; save(); embedPlan(); }; });
+  if(document.getElementById('epSaveTimes')){
+    document.getElementById('epSaveTimes').onclick=()=>{
+      box.querySelectorAll('.plan-item').forEach(item=>{
+        const id=item.querySelector('[data-part=start]').dataset.id;
+        const s=item.querySelector('[data-part=start]').value, e=item.querySelector('[data-part=end]').value;
+        if(s&&e) DB.times[id]=`${s}-${e}`; else if(!s&&!e) delete DB.times[id];
+      });
+      save(); toast('时间已保存'); embedPlan();
+    };
+  }
+  if(document.getElementById('epClear')){
+    document.getElementById('epClear').onclick=()=>{ ordered.forEach(it=>delete DB.times[it.id]); save(); toast('已清空时间段'); embedPlan(); };
+  }
+  if(document.getElementById('epGotoPlan')) document.getElementById('epGotoPlan').onclick=()=>{ dakaTab='plan'; renderDaka(); };
 }
 function embedTimes(){
   const box=document.getElementById('embedTimes'); if(!box) return;
@@ -1937,16 +1984,28 @@ function renderMoney(){
 /* ================= 养生 ================= */
 const YS_DEFAULT=[{name:'喝水',icon:'💧'},{name:'早睡',icon:'🌙'},{name:'泡脚',icon:'🦶'},{name:'冥想',icon:'🪷'}];
 let YS_MIGRATED=false;
+let ysTab='habit';
+let periodView={year:null,month:null};
+function ysMonKey(y,m){ return y+'-'+String(m+1).padStart(2,'0'); }
 function renderYangsheng(){
-  // 一次性迁移：移除默认的「八段锦」习惯
   if(!YS_MIGRATED){ YS_MIGRATED=true; const arr=DB.yangsheng.habits||[]; if(arr.some(h=>h.name==='八段锦')){ DB.yangsheng.habits=arr.filter(h=>h.name!=='八段锦'); save(); } }
   if(!DB.yangsheng.habits.length){ DB.yangsheng.habits=YS_DEFAULT.map(h=>({id:uid(),...h})); save(); }
-  const t=todayStr();
-  const log=DB.yangsheng.logs[t]||{};
-  const doneN=DB.yangsheng.habits.filter(h=>log[h.id]).length;
+  DB.period=DB.period||{months:{},notes:{}};
   pagesEl.innerHTML=`
     <h1 class="page-title">${tIcon('yangsheng')}养生</h1>
     <div class="page-sub">健康习惯 · 每日坚持</div>
+    <div class="tabs">
+      ${['habit','period'].map(id=>`<button class="tab-btn ${ysTab===id?'on':''}" data-ystab="${id}">${tabLabel('ys',id)}</button>`).join('')}${renameBtnHTML('ys')}
+    </div>
+    <div id="ysContent">${ysTab==='habit'?ysHabitHTML():ysPeriodHTML()}</div>`;
+  pagesEl.querySelectorAll('[data-ystab]').forEach(b=>{ b.onclick=()=>{ ysTab=b.dataset.ystab; renderYangsheng(); }; });
+  if(ysTab==='habit') bindYsHabit(); else bindYsPeriod();
+}
+function ysHabitHTML(){
+  const t=todayStr();
+  const log=DB.yangsheng.logs[t]||{};
+  const doneN=DB.yangsheng.habits.filter(h=>log[h.id]).length;
+  return `
     <div class="stat-badges">
       <div class="stat-badge"><div class="num">${doneN}</div><div class="lab">今日完成</div></div>
       <div class="stat-badge"><div class="num">${DB.yangsheng.habits.length}</div><div class="lab">习惯总数</div></div>
@@ -1974,6 +2033,9 @@ function renderYangsheng(){
       <textarea id="ysNote" placeholder="记录今天的身体状态、感悟…" style="min-height:60px">${escapeHtml((DB.yangsheng.logs[t]&&DB.yangsheng.logs[t].note)||'')}</textarea>
       <button class="btn btn-primary btn-block" id="ysSaveNote" style="margin-top:8px">保存心得</button>
     </div>`;
+}
+function bindYsHabit(){
+  const t=todayStr();
   pagesEl.querySelectorAll('[data-hid]').forEach(item=>{
     item.addEventListener('click',e=>{
       const del=e.target.closest('[data-hdel]');
@@ -1999,6 +2061,95 @@ function renderYangsheng(){
   document.getElementById('ysSaveNote').onclick=()=>{
     DB.yangsheng.logs[t]=DB.yangsheng.logs[t]||{}; DB.yangsheng.logs[t].note=document.getElementById('ysNote').value; save(); toast('心得已保存');
   };
+}
+/* 生理期记录：日历选连续几天 → 填色；底部写备注 */
+function ysPeriodHTML(){
+  const n=new Date();
+  if(!periodView.year){ periodView.year=n.getFullYear(); periodView.month=n.getMonth(); }
+  return `<div class="card">
+    <div class="embed-head"><span class="eh-title">🌙 生理期记录</span><span style="font-size:11px;color:var(--text-soft)">先点「开始日」再点「结束日」，中间自动连续填色</span></div>
+    <div class="cal-head"><button class="btn btn-ghost btn-sm" id="ysPrev">‹ 上月</button><div class="mon" id="ysMon"></div><button class="btn btn-ghost btn-sm" id="ysNext">› 下月</button></div>
+    <div class="cal-grid" id="ysCal"></div>
+    <div class="ys-sel-status" id="ysSelStatus"></div>
+    <div class="legend"><span><span class="sw" style="background:#e8a8c0"></span>生理期</span><span><span class="sw" style="background:#fdf3f7;box-shadow:inset 0 0 0 2px rgba(206,130,168,.5)"></span>今天</span></div>
+    <label class="f-label">📝 本月备注</label>
+    <textarea id="ysPeriodNote" placeholder="记录这期的情况，如：量少、腹痛、心情…" style="min-height:60px"></textarea>
+    <div class="dp-foot"><button class="btn btn-ghost btn-sm" id="ysClear">清空本月</button><button class="btn btn-primary" id="ysSavePeriod" style="flex:1">💾 保存备注</button></div>
+  </div>
+  <div class="card"><h3>🗂 已保存的生理期记录</h3><div id="ysSavedList"></div></div>`;
+}
+function bindYsPeriod(){
+  document.getElementById('ysPrev').onclick=()=>{ periodView.month--; if(periodView.month<0){periodView.month=11;periodView.year--;} updateYsCal(); };
+  document.getElementById('ysNext').onclick=()=>{ periodView.month++; if(periodView.month>11){periodView.month=0;periodView.year++;} updateYsCal(); };
+  document.getElementById('ysClear').onclick=()=>{
+    const mk=ysMonKey(periodView.year,periodView.month);
+    DB.period.months[mk]={}; save(); updateYsCal(); toast('已清空本月');
+  };
+  document.getElementById('ysSavePeriod').onclick=()=>{
+    const mk=ysMonKey(periodView.year,periodView.month);
+    DB.period.notes[mk]=document.getElementById('ysPeriodNote').value; save(); toast('备注已保存');
+  };
+  updateYsCal();
+  document.getElementById('ysCal').addEventListener('click',e=>{
+    const cell=e.target.closest('[data-pds]'); if(!cell) return;
+    const ds=cell.dataset.pds; const mk=ysMonKey(periodView.year,periodView.month);
+    DB.period.months[mk]=DB.period.months[mk]||{};
+    const r=DB.period.months[mk];
+    if(!r.start || (r.start && r.end)){ r.start=ds; r.end=''; }            // 第一次/第三次点击：重新开始
+    else { r.end=ds; if(r.end<r.start){ const tmp=r.start; r.start=r.end; r.end=tmp; } }  // 第二次点击：补全（自动正序）
+    save(); updateYsCal();
+  });
+}
+function updateYsCal(){
+  const y=periodView.year, m=periodView.month, mk=ysMonKey(y,m);
+  const cal=document.getElementById('ysCal'), mon=document.getElementById('ysMon');
+  if(!cal) return;
+  mon.textContent=`${y}年${m+1}月`;
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const r=(DB.period.months&&DB.period.months[mk])||{};
+  let lo=0, hi=0;
+  if(r.start){ const sd=+r.start.slice(-2); const ed=r.end?+r.end.slice(-2):sd; lo=Math.min(sd,ed); hi=Math.max(sd,ed); }
+  const today=todayStr();
+  let cells='';
+  for(let i=0;i<first;i++) cells+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const on=(r.start&&d>=lo&&d<=hi);
+    const isToday=ds===today;
+    cells+=`<div class="cal-cell ${on?'period':''} ${isToday?'today':''}" data-pds="${ds}">${d}</div>`;
+  }
+  cal.innerHTML=cells;
+  const note=document.getElementById('ysPeriodNote'); if(note) note.value=(DB.period.notes&&DB.period.notes[mk])||'';
+  // 选中状态提示
+  const st=document.getElementById('ysSelStatus');
+  if(st){
+    if(r.start){
+      const end=r.end||r.start;
+      const daysN=Math.abs(+end.slice(-2)-+r.start.slice(-2))+1;
+      st.innerHTML=`<span class="ys-sel-ok">✅ 已选 ${ysDateShort(r.start)} – ${ysDateShort(end)}（共 ${daysN} 天，已自动保存）</span>`;
+    } else {
+      st.innerHTML=`<span class="ys-sel-tip">👆 先点「开始日」，再点「结束日」，中间自动连续填色</span>`;
+    }
+  }
+  // 已保存记录快捷查看
+  const listEl=document.getElementById('ysSavedList');
+  if(listEl) listEl.innerHTML=ysSavedListHTML();
+}
+/* 日期简写 YYYY-MM-DD → M月D日 */
+function ysDateShort(ds){ if(!ds) return ''; const p=ds.split('-'); return (+p[1])+'月'+(+p[2])+'日'; }
+/* 已保存的生理期记录列表（含备注，便于快速回看） */
+function ysSavedListHTML(){
+  const m=DB.period.months||{}, n=DB.period.notes||{};
+  const keys=Object.keys(m).filter(k=>m[k]&&m[k].start).sort().reverse();
+  if(!keys.length) return '<div class="ys-saved-empty">还没有保存的生理期记录，在上面日历选日期即可保存 🌸</div>';
+  return keys.map(k=>{
+    const r=m[k]; const end=r.end||r.start;
+    return `<div class="ys-saved-item">
+      <span class="ys-saved-dot"></span>
+      <div class="ys-saved-info"><div class="ys-saved-t">${k.replace('-','年')}月</div><div class="ys-saved-r">${ysDateShort(r.start)} – ${ysDateShort(end)}</div></div>
+      <div class="ys-saved-note">${escapeHtml((n[k]||'')||'无备注')}</div>
+    </div>`;
+  }).join('');
 }
 
 /* ================= 备忘 ================= */
@@ -2196,8 +2347,7 @@ function renderOutfit(){
     <h1 class="page-title">${tIcon('outfit')}穿搭</h1>
     <div class="page-sub">今天穿什么</div>
     <div class="tabs">
-      <button class="tab-btn ${outfitTab==='dress'?'on':''}" data-tab="dress">👕 穿搭</button>
-      <button class="tab-btn ${outfitTab==='makeup'?'on':''}" data-tab="makeup">💄 妆容</button>
+      ${['dress','makeup'].map(id=>`<button class="tab-btn ${outfitTab===id?'on':''}" data-tab="${id}">${tabLabel('outfit',id)}</button>`).join('')}${renameBtnHTML('outfit')}
     </div>
     ${outfitTab==='dress'?renderDressHTML():renderMakeupHTML()}`;
   pagesEl.querySelectorAll('.tab-btn').forEach(b=>{ b.onclick=()=>{ outfitTab=b.dataset.tab; renderOutfit(); }; });
@@ -2311,8 +2461,7 @@ function renderSport(){
     <h1 class="page-title">${tIcon('sport')}运动</h1>
     <div class="page-sub">跟着视频动起来</div>
     <div class="tabs">
-      <button class="tab-btn ${sportTab==='dance'?'on':''}" data-tab="dance">💃 舞蹈</button>
-      <button class="tab-btn ${sportTab==='other'?'on':''}" data-tab="other">🏋️ 其他</button>
+      ${['dance','other'].map(id=>`<button class="tab-btn ${sportTab===id?'on':''}" data-tab="${id}">${tabLabel('sport',id)}</button>`).join('')}${renameBtnHTML('sport')}
     </div>
     ${sportCounterHTML()}
     ${sportVideoHTML(sportTab)}`;
