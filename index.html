@@ -243,13 +243,17 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
 .ys-sel-ok{color:#c74f8a;}
 .ys-sel-tip{color:var(--text-soft);font-weight:600;}
 .ys-saved-empty{color:var(--text-soft);font-size:12px;text-align:center;padding:14px;}
-.ys-saved-item{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px dashed rgba(140,120,100,.18);}
+.ys-saved-item{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px dashed rgba(140,120,100,.18);cursor:pointer;border-radius:12px;transition:background .15s;}
+.ys-saved-item:hover{background:rgba(232,168,192,.12);}
 .ys-saved-item:last-child{border-bottom:none;}
+.ys-saved-item.cur{background:linear-gradient(145deg,#fdf1f5,#f7dbe6);outline:2px solid rgba(232,168,192,.45);outline-offset:-2px;}
 .ys-saved-dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(145deg,#f0bcd0,#e8a8c0);box-shadow:var(--clay-soft);flex:none;}
 .ys-saved-info{flex:1;min-width:0;}
 .ys-saved-t{font-size:13px;font-weight:800;}
 .ys-saved-r{font-size:11px;color:var(--text-soft);margin-top:1px;}
-.ys-saved-note{font-size:11px;color:var(--text-soft);max-width:40%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ys-saved-note{font-size:11px;color:var(--text-soft);max-width:38%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ys-saved-edit{flex:none;font-size:13px;opacity:.5;}
+.ys-saved-item.cur .ys-saved-edit{opacity:1;}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--text-soft);margin:10px 0;flex-wrap:wrap;}
 .legend span{display:flex;align-items:center;gap:5px;font-weight:600;}
 .legend .sw{width:14px;height:14px;border-radius:6px;display:inline-block;box-shadow:var(--clay-soft);}
@@ -2085,7 +2089,7 @@ function ysPeriodHTML(){
     <textarea id="ysPeriodNote" placeholder="记录这期的情况，如：量少、腹痛、心情…" style="min-height:60px"></textarea>
     <div class="dp-foot"><button class="btn btn-ghost btn-sm" id="ysClear">清空本月</button><button class="btn btn-primary" id="ysSavePeriod" style="flex:1">💾 保存备注</button></div>
   </div>
-  <div class="card"><h3>🗂 已保存的生理期记录</h3><div id="ysSavedList"></div></div>`;
+  <div class="card"><h3>🗂 已保存的生理期记录 <span style="font-size:11px;color:var(--text-soft);font-weight:600">（点某条可切换到该月，重新编辑备注）</span></h3><div id="ysSavedList"></div></div>`;
 }
 function bindYsPeriod(){
   document.getElementById('ysPrev').onclick=()=>{ periodView.month--; if(periodView.month<0){periodView.month=11;periodView.year--;} updateYsCal(); };
@@ -2096,7 +2100,7 @@ function bindYsPeriod(){
   };
   document.getElementById('ysSavePeriod').onclick=()=>{
     const mk=ysMonKey(periodView.year,periodView.month);
-    DB.period.notes[mk]=document.getElementById('ysPeriodNote').value; save(); toast('备注已保存');
+    DB.period.notes[mk]=document.getElementById('ysPeriodNote').value; save(); updateYsCal(); toast('备注已保存');
   };
   updateYsCal();
   document.getElementById('ysCal').addEventListener('click',e=>{
@@ -2107,6 +2111,15 @@ function bindYsPeriod(){
     if(!r.start || (r.start && r.end)){ r.start=ds; r.end=''; }            // 第一次/第三次点击：重新开始
     else { r.end=ds; if(r.end<r.start){ const tmp=r.start; r.start=r.end; r.end=tmp; } }  // 第二次点击：补全（自动正序）
     save(); updateYsCal();
+  });
+  // 点「已保存的生理期记录」某条 → 切换月份并聚焦备注，便于重新编辑
+  document.getElementById('ysSavedList').addEventListener('click',e=>{
+    const item=e.target.closest('[data-mkey]'); if(!item) return;
+    const p=item.dataset.mkey.split('-');
+    periodView.year=+p[0]; periodView.month=(+p[1])-1;
+    updateYsCal();
+    const ta=document.getElementById('ysPeriodNote');
+    if(ta){ try{ ta.focus({preventScroll:true}); }catch(_){} ta.scrollIntoView({behavior:'smooth',block:'center'}); }
   });
 }
 function updateYsCal(){
@@ -2153,10 +2166,12 @@ function ysSavedListHTML(){
   if(!keys.length) return '<div class="ys-saved-empty">还没有保存的生理期记录，在上面日历选日期即可保存 🌸</div>';
   return keys.map(k=>{
     const r=m[k]; const end=r.end||r.start;
-    return `<div class="ys-saved-item">
+    const cur=(k===ysMonKey(periodView.year,periodView.month));
+    return `<div class="ys-saved-item ${cur?'cur':''}" data-mkey="${k}">
       <span class="ys-saved-dot"></span>
       <div class="ys-saved-info"><div class="ys-saved-t">${k.replace('-','年')}月</div><div class="ys-saved-r">${ysDateShort(r.start)} – ${ysDateShort(end)}</div></div>
       <div class="ys-saved-note">${escapeHtml((n[k]||'')||'无备注')}</div>
+      <span class="ys-saved-edit" title="切换编辑">✏️</span>
     </div>`;
   }).join('');
 }
