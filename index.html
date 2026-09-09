@@ -360,7 +360,7 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
 
 /* ===== 计划表 ===== */
 .plan-item{
-  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;margin-bottom:9px;
+  display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:15px;margin-bottom:8px;
   box-shadow:var(--clay-card);position:relative;
 }
 .plan-item::after{
@@ -375,12 +375,21 @@ label.f-label{font-size:12px;color:var(--text-soft);display:block;margin:10px 0 
   box-shadow:var(--clay-soft);text-shadow:0 1px 1px rgba(0,0,0,.08);
 }
 .plan-ico{
-  font-size:22px;width:40px;height:40px;border-radius:14px;
+  font-size:17px;width:29px;height:29px;border-radius:9px;flex:none;
   display:flex;align-items:center;justify-content:center;
   background:linear-gradient(145deg,#ffffff,#ecf3ee);box-shadow:var(--clay-soft);
 }
-.plan-name{flex:1;font-size:15px;font-weight:700;}
+.plan-name{flex:1;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .plan-tag{font-size:11px;color:var(--text-soft);font-weight:600;}
+/* 计划表打卡按钮（左侧圆形勾选，完成变绿） */
+.plan-check{
+  width:30px;height:30px;border-radius:50%;flex:none;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#ffffff,#ede7db);box-shadow:var(--clay-soft);
+  font-size:15px;font-weight:800;color:#c9b5a0;transition:all .15s;
+}
+.plan-check.done{background:linear-gradient(145deg,#a9d8b6,#7fc49a);color:#fff;}
+.plan-check:active{transform:translateY(1px);box-shadow:var(--clay-press);}
 
 /* ===== Toast ===== */
 #toast{
@@ -682,9 +691,9 @@ select:focus{box-shadow:var(--clay-inset),0 0 0 2px rgba(196,168,130,.45);}
 .tab-ren{flex:0 0 auto;width:34px;height:34px;border:none;border-radius:12px;background:linear-gradient(145deg,#fff,#f5efe6);color:#a68b76;box-shadow:var(--clay-soft);cursor:pointer;font-size:15px;align-self:center;transition:all .12s;}
 .tab-ren:active{transform:translateY(2px);box-shadow:var(--clay-press);}
 /* 计划表内联时间选择 */
-.plan-time-set{display:flex;align-items:center;gap:4px;flex:1;justify-content:flex-end;}
-.plan-time-set .ptime{width:98px;box-shadow:var(--clay-inset);background:linear-gradient(145deg,#fff,#f5efe6);border-radius:11px;padding:7px 6px;font-size:13px;}
-.plan-time-set .pt-dash{color:var(--text-soft);font-weight:700;}
+.plan-time-set{display:flex;align-items:center;gap:3px;flex:none;}
+.plan-time-set .ptime{width:66px;box-shadow:var(--clay-inset);background:linear-gradient(145deg,#fff,#f5efe6);border-radius:8px;padding:6px 4px;font-size:11px;border:none;}
+.plan-time-set .pt-dash{color:var(--text-soft);font-weight:700;font-size:11px;}
 
 /* ===== 记账 ===== */
 .money-head{display:flex;align-items:center;justify-content:space-between;}
@@ -1786,6 +1795,7 @@ function embedPlan(){
       const done=checks[it.id];
       const end=it.time.split('-')[1]||'';
       return `<div class="plan-item" style="background:${COLOR_MAP[it.color]}22">
+        <button class="plan-check ${done?'done':''}" data-check="${it.id}" title="${done?'取消打卡':'标记完成'}">✓</button>
         <span class="plan-ico">${it.emoji}</span>
         <div class="plan-name">${escapeHtml(it.name)}</div>
         <div class="plan-time-set">
@@ -1793,7 +1803,6 @@ function embedPlan(){
           <span class="pt-dash">–</span>
           <input type="time" class="ptime" value="${end}" data-id="${it.id}" data-part="end">
         </div>
-        <button class="mc-btn ${done?'':''}" data-check="${it.id}" title="${done?'取消打卡':'标记完成'}">${done?'✅':'✓'}</button>
       </div>`;
     }).join('') : '<div style="text-align:center;color:var(--text-soft);padding:14px">今天没有安排计划，去「每日计划」里添加</div>'}
     ${ordered.length?`<div class="dp-foot"><button class="btn btn-ghost btn-sm" id="epClear">清空时间</button><button class="btn btn-primary" id="epSaveTimes" style="flex:1">💾 保存时间段</button></div>`:`<div style="margin-top:10px"><button class="btn btn-ghost btn-block" id="epGotoPlan">去「每日计划」添加</button></div>`}`;
